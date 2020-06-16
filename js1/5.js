@@ -8,6 +8,12 @@
  */
 
 const solution = (num, fun) => {
+  if (num <= 0) {
+    return
+  }
+  fun()
+  num -= 1
+  return solution(num, fun)
 }
 
 module.exports = {
