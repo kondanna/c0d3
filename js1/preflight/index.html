@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JS1</title>
+    </head>
+    <body>
+        <div>
+            <input class="num1" type="text"/>
+            <input class="num2" type="text"/>
+            <button class="generate">Generate</button>
+            <input class="num3" type="text"/>
+            <button class="submit">Sum</button>
+        </div>
+        <script type="text/javascript">
+            const num1 = document.querySelector('.num1')
+            const num2 = document.querySelector('.num2')
+            const num3 = document.querySelector('.num3')
+            let executeFunction
+            document.querySelector('.generate').onclick = () => {
+                const sum = +num1.value + +num2.value
+                executeFunction = (num3) => {
+                    return sum + num3
+                }
+            }
+            document.querySelector('.submit').onclick = () => {
+                alert(executeFunction(+num3.value))
+            }
+        </script>
+    </body>
+</html>
