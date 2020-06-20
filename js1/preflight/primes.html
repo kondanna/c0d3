@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JS1</title>
+    </head>
+    <body>
+        <div class="container"></div>
+        <h1></h1>              
+        <script type="text/javascript">
+            function isPrime(num, i=2) {
+                if (num < 2) return false 
+                if (i == num) return true
+                if (num % i == 0) return false
+                return isPrime(num, i+1)
+            }
+            function getPrimes(num, result='') {
+                if (num < 2) return result
+                if (!isPrime(num)) return getPrimes(num-1, result)
+                return getPrimes(num-1, `${num}... ` + result)
+            }            
+            (function startApp () {
+                const div = document.querySelector('.container')
+                div.innerHTML = `<input id="num" type="text"/>
+                                 <button id="getPrimes">Get Primes</button>`
+                document.querySelector('#getPrimes').onclick = () => {
+                    const num = +document.querySelector('#num').value
+                    console.log(num)
+                    document.querySelector('h1').innerText = getPrimes(num)
+                }
+            })()
+        </script>
+    </body>
+</html>
