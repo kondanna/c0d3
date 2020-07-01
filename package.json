@@ -6,8 +6,10 @@
     "test": "node ./node_modules/jest/bin/jest.js -o --watch"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "express": "^4.17.1",
     "jest": "^24.9.0",
+    "node-fetch": "^2.6.0",
     "webpack": "^4.41.2"
   },
   "devDependencies": {
