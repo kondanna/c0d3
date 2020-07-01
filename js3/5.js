@@ -5,21 +5,8 @@
  * @return {object}
  **/
 
-const solution = (obj1, obj2, result) => {
-  let parameterList = Object.entries(obj1)
-  let functionList = Object.entries(obj2)
-  return parameterList.reduce((acc, p) => {
-    functionList.forEach(f => {
-      console.log(p[0], f[0])
-      if (p[0] === f[0]) { 
-        acc[p[0]] = f[1](p[1])
-        return
-      } else {
-        acc[p[0]] = p[1]
-      }
-    })
-    return acc
-  }, {})
+const solution = (obj1, obj2) => {
+  return {}
 }
 module.exports = {
   solution
