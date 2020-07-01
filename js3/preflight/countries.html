@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head><title>Countries</title></head>
+    <body><div class="content"></div></body>
+    <script>
+        fetch('https://country.register.gov.uk/records.json?page-size=500').then(response => {
+            return response.json() // data is an object of objects; country name and citizens are in object at item[0]
+        }).then(data => {
+            const countryList = Object.values(data)
+            document.querySelector('.content').innerHTML = countryList.reduce((acc, e) => `${acc}<h1 class="country">${e.item[0].name}</h1>`, '')
+            document.querySelectorAll('.country').forEach((el, idx) => {
+                el.onclick = () => {
+                    alert(countryList[idx].item[0]['citizen-names'])
+                }
+            })
+        })
+        
+    </script>
+</html>
