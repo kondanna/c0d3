@@ -5,9 +5,7 @@
  */
 
 const solution = (arr, obj) => {
-  return arr.map(e => {
-    if (obj[e]) return obj[e]
-  })
+  return []
 }
 
 module.exports = {
