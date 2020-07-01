@@ -6,7 +6,7 @@
 
 const solution = () => {
   Object.prototype.map = function (cb) {
-    return []
+    return Object.entries(this).map((e, idx) => cb(e[0], e[1], idx))
   }
 }
 
