@@ -7,8 +7,13 @@
  * @call each function value of the object, millieseconds after each other
 */
 
-const solution = (obj, num) => {
-
+const solution = (obj, num, i=0) => {
+  const objArr = Object.entries(obj)
+  if (i === objArr.length) return
+  objArr[i][1](objArr[i][0])
+  setTimeout(() => {
+    solution(obj, num, i+1)
+  }, num)
 }
 
 module.exports = {
