@@ -15,13 +15,11 @@
             fetch(url).then(response => {
                 return response.json()
             }).then(data => {
-                const next = data.next 
-                const previous = data.previous
                 document.querySelector('.previous').onclick = () => {
-                    render(previous)
+                    render(data.previous)
                 }
                 document.querySelector('.next').onclick = () => {
-                    render(next)
+                    render(data.next)
                 }
                 const fetchPromises = data.results.map(pokemon => {
                     return fetch(pokemon.url).then(pokeDetails => {
