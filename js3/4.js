@@ -5,8 +5,11 @@
  * @returns {boolean}
  */
 
-const solution = (arr, num) => {
-  return true
+const solution = (arr, num, i=0, map={}) => {
+  if (i === arr.length) return false
+  if (map[num-arr[i]]) return true 
+  map[arr[i]] = true
+  return solution(arr, num, i+1, map)
 }
 
 module.exports = {
