@@ -12,8 +12,7 @@ const tokenize = (str) => {
 }
 
 const makeTrainingData = (obj) => {
-    const entries = Object.entries(obj)
-    return entries.reduce((acc, e) => {
+    return Object.entries(obj).reduce((acc, e) => {
         acc.push({input: tokenize(e[0]), output: tokenize(e[1])})
         return acc
     }, [])
