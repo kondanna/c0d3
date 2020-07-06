@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ClickRecorder</title>
+    </head>
+    <body>
+        <div class="display"></div>
+    </body>
+    <script>
+        const display = document.querySelector('.display')
+        document.addEventListener('click', (e) => {
+            const newElement = document.createElement('h1')
+            newElement.innerText = `X: ${e.clientX}, Y: ${e.clientY}`
+            display.prepend(newElement)
+        })
+    </script>
+</html>

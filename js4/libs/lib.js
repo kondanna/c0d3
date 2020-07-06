@@ -18,7 +18,18 @@ const makeTrainingData = (obj) => {
     }, [])
 }
 
+const pushAll = (obj, arr) => {
+    Object.keys(obj).forEach(k => {
+        obj[k].push(arr)
+    })
+    return obj
+}
+
+const getMostLikely = (obj) => Object.entries(obj).reduce((acc, e) => acc[1] > e[1] ? acc : e, [null, 0])[0]
+
 lib.tokenize = tokenize
 lib.makeTrainingData = makeTrainingData
+lib.pushAll = pushAll
+lib.getMostLikely = getMostLikely
 
 module.exports = lib

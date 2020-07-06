@@ -33,3 +33,46 @@ describe('makeTrainingData function', () => {
         expect(result).toEqual([{input: {BEEF: 1, BONELESS: 1}, output: {MEAT: 1}}, {input: {PINK: 1, APPLES: 1}, output: {VEGGIE: 1}}])
     })
 })
+
+describe('pushAll function', () => {
+    it('should return empty object given {}', () => {
+        const result = lib.pushAll({}, [9, 8, 7])
+        expect(result).toEqual({})
+    })
+    it('should push onto non-empty arrays', () => {
+        const result = lib.pushAll({ blah: [['hello']]}, [9, 8, 7])
+        expect(result).toEqual({ blah: [['hello'], [9, 8, 7]]})
+    })
+    it('should push onto existing empty arrays', () => {
+        const result = lib.pushAll({ blah: []}, [9, 8, 7])
+        expect(result).toEqual({ blah: [[9, 8, 7]]})
+    })
+    it('should push onto multiple key value pairs', () => {
+        const result = lib.pushAll({ key1: [['hello']], key2: []}, [9, 8, 7])
+        expect(result).toEqual({ key1: [['hello'], [9, 8, 7]], key2: [[9, 8, 7]]})
+    })
+})
+
+// lib.test.js -- continued from previous answer
+describe('getMostLikely', () => {
+  it('should return null if {}', () => {
+    const result = lib.getMostLikely({})
+    expect(result).toEqual(null)
+  })
+  it('should return first key', () => {
+    const result = lib.getMostLikely({
+      meat: 0.987,
+      veggie: 0.187,
+      store: 0.287
+    })
+    expect(result).toEqual('meat')
+  })
+  it('should return last key', () => {
+    const result = lib.getMostLikely({
+      meat: 0.287,
+      veggie: 0.187,
+      store: 0.987
+    })
+    expect(result).toEqual('store')
+  })
+})
