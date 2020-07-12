@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <style>
+            .container {
+                width: 850px;
+                margin: auto;
+            }
+            
+            .backgroundContainer {
+                height: 365px;
+                border: 1px solid rgba(100,100,100, 0.5);
+                position: relative;
+            }
+            .backgroundImage {
+                background: url(https://placekitten.com/850/320);
+                filter: blur(2px);
+                height: 320px;
+                background-size: cover;
+            }
+            .profileImage {
+                width: 168px;
+                height: 168px;
+                border-radius: 50%;
+                background: url(https://placekitten.com/168/168);
+                position: absolute;
+                bottom: 15px;
+                left: 15px;
+                border: 5px solid rgba(255,255,255,1);
+                box-sizing: border-box;
+            }
+            
+            .profileName {
+                position: absolute;
+                bottom: 55px;
+                left: 200px;
+                font-size: 50px;
+                color: rgba(255,255,255,1);
+            }
+            
+            .navigationContainer {
+                margin-left: 183px;
+                display: flex;
+                justify-content: space-around;
+                font-size: 25px;
+                padding-top: 7px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="backgroundContainer">
+              <div class="backgroundImage"></div>
+          
+              <div class="profileImage"></div>
+              <div class="profileName">Cat Onabench</div>
+          
+              <div class="navigationContainer">
+                <div class="navOption">Timeline</div>
+                <div class="navOption">About</div>
+                <div class="navOption">Friends</div>
+                <div class="navOption">Photos</div>
+                <div class="navOption">Archive</div>
+                <div class="navOption">More</div>
+              </div>
+            </div>
+          </div>
+    </body>
+</html>
