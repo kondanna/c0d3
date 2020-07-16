@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="content">
+        </div>
+        <script>
+            const starElements = []
+            const content = document.querySelector('.content')
+            const renderStars = (n, idx = 0) => {
+                if (idx === n) return 
+                const star = document.createElement('i')
+                star.className = 'fa-star far'
+                star.id = idx 
+                content.appendChild(star)
+                return renderStars(n, idx + 1)
+            }
+            renderStars(5)
+        </script>
+    </body>
+</html>
