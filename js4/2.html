@@ -17,40 +17,44 @@
         <script>
             const stars = document.querySelector('.stars')
             const status = document.querySelector('.status')
-
             let clicked = false
             stars.onmouseenter = () => {
                 clicked = false 
             }
 
-            function Star(idx) {
-                this.el = document.createElement('i')
-                this.el.className = 'fa-star far'
-
-                this.toggleClass = (add, remove) => {
-                    this.el.classList.add(add)
-                    this.el.classList.remove(remove)
-                }
-                this.fillStars = () => {
-                    starElements.forEach((star, i) => {
-                        i <= idx ? star.toggleClass('fas', 'far') : star.toggleClass('far', 'fas')
-                    })
-                }
-                this.el.onmouseenter = () => {
-                    if (clicked) return 
-                    this.fillStars()
-                    status.innerText = `You are giving ${idx + 1} stars!`
-                }
-                this.el.onclick = () => {
-                    clicked = true 
-                    this.fillStars()
-                    status.innerText = `You have given ${idx + 1} stars!`
-                }
-                
-                stars.appendChild(this.el)
+            const toggleClass = (el, addClass, removeClass) => {
+                el.classList.add(addClass)
+                el.classList.remove(removeClass)
             }
 
-            let starElements = ['','','','',''].map((_, i) => new Star(i))
+            const fillStars = (idx) => {
+                starElements.forEach((star, i) => {
+                    i <= idx ? toggleClass(star, 'fas', 'far') : toggleClass(star, 'far', 'fas')
+                })
+            }
+
+            function makeStar(idx) {
+                const el = document.createElement('i')
+                el.className = 'fa-star far'
+
+                el.onmouseenter = () => {
+                    if (clicked) return 
+                    fillStars(idx)
+                    status.innerText = `You are giving ${idx + 1} stars!`
+                }
+                el.onclick = () => {
+                    clicked = true 
+                    fillStars(idx)
+                    status.innerText = `You have given ${idx + 1} stars!`
+                }
+                return el
+            }
+
+            let starElements = ['','','','',''].map((_, i) => {
+                const star = makeStar(i)
+                stars.append(star)
+                return star
+            })
         </script>
     </body>
 </html>
