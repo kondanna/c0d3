@@ -6,20 +6,49 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div class="content">
-        </div>
+        <div class="stars"></div>
+        <div class="status"></div>
         <script>
-            const starElements = []
-            const content = document.querySelector('.content')
-            const renderStars = (n, idx = 0) => {
-                if (idx === n) return 
-                const star = document.createElement('i')
-                star.className = 'fa-star far'
-                star.id = idx 
-                content.appendChild(star)
-                return renderStars(n, idx + 1)
+            const stars = document.querySelector('.stars')
+            const status = document.querySelector('.status')
+
+            let clicked = false
+            stars.onmouseenter = () => {
+                clicked = false 
             }
-            renderStars(5)
+
+            function Star(idx) {
+                this.el = document.createElement('i')
+                this.el.className = 'fa-star far'
+
+                this.toggleClass = (add, remove) => {
+                    this.el.classList.add(add)
+                    this.el.classList.remove(remove)
+                }
+
+                this.fillStars = () => {
+                    starElements.forEach((star, i) => {
+                        i <= idx ? star.toggleClass('fas', 'far') : star.toggleClass('far', 'fas')
+                    })
+                }
+
+                this.el.onmouseenter = () => {
+                    if (clicked) return 
+                    this.fillStars()
+                    status.innerText = `You are giving ${idx + 1} stars!`
+                }
+
+                this.el.onclick = () => {
+                    clicked = true 
+                    this.fillStars()
+                    status.innerText = `You have given ${idx + 1} stars!`
+                }
+
+                stars.appendChild(this.el)
+            }
+
+            let starElements = ['','','','','']
+            starElements = starElements.map((_, i) => new Star(i))
         </script>
     </body>
 </html>
