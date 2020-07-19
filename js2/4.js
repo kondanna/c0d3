@@ -15,11 +15,14 @@
  * @returns {function}
  */
 
-const solution = (arr, cb) => {
+const solution = (arr, cb, i=0) => {
   return () => {
+    if (i == arr.length) i=0
+    let result = cb(arr[i])
+    i++
+    return result
   }
 }
-
 
 module.exports = {
   solution
