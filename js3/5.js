@@ -6,8 +6,15 @@
  **/
 
 const solution = (obj1, obj2) => {
-  return {}
+  return Object.keys(obj1).reduce((acc, p) => {
+    acc[p] = obj1[p] // paramsList key-value pairs by default
+    if (obj2[p]) {
+      acc[p] = obj2[p](obj1[p]) // unless there is a key match
+    } 
+    return acc
+  }, {})
 }
+
 module.exports = {
   solution
 }

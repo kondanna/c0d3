@@ -12,8 +12,17 @@
  * @return {array} arr
  */
 
-const solution = (num1, num2) => {
-  return []
+const createOneDimensionArray = (nElements, y, arr=[]) => {
+  if (nElements === 0) return arr 
+  arr.push({y, x: arr.length})
+  return createOneDimensionArray(nElements-1, y, arr)
+}
+
+const solution = (numNestedArrays, numObjectsInArray, result=[]) => {
+  if (numNestedArrays === 0) return result 
+  const row = createOneDimensionArray(numObjectsInArray, result.length)
+  result.push(row)
+  return solution(numNestedArrays-1, numObjectsInArray, result)
 }
 
 module.exports = {
