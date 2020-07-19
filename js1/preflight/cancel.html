@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JS1</title>
+    </head>
+    <body>
+        <div class="container">
+            <button class="start">Start</button>
+        </div>
+        <script type="text/javascript">
+            (function startApp() {
+                const container = document.querySelector('.container')
+                container.innerHTML = `<button class="start">Start</button>`
+                document.querySelector('.start').onclick = () => {
+                    container.innerHTML = `<input class="textInput" type="text"/>
+                                           <button class="cancel">Cancel</button>`
+                    document.querySelector('.cancel').onclick = startApp
+                }
+            })()
+        </script>
+    </body>
+</html>

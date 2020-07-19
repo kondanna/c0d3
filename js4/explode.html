@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Exploding Text</title>
+    </head>
+    <body>
+        <input class="input" type="text"/>
+        <canvas class="canvas" width="800" height="500"></div>
+    </body>
+    <script>
+        const input = document.querySelector('.input')
+        const canvas = document.querySelector('.canvas')
+        const context = canvas.getContext('2d')
+        context.font = '50px Comic Sans MS' 
+        context.fillStyle = 'yellow'
+        context.fillRect(0, 0, 800, 500)
+        input.focus()
+
+        const explode = (str) => {
+            context.fillStyle = 'yellow'
+            context.fillRect(0, 0, 800, 500)
+
+            context.fillStyle = 'black'
+            str.split('').forEach(letter => {
+                context.fillText(letter, Math.floor(Math.random() * 800), 
+                Math.floor(Math.random() * 500))
+            })
+        }
+
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                explode(input.value)
+                input.value = ''
+            }
+        })
+    </script>
+</html>

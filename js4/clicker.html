@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ClickRecorder</title>
+    </head>
+    <body>
+        <button class="addCounter">Add Counter</button>
+        <div class="display"></div>
+    </body>
+    <script>
+        const display = document.querySelector('.display')
+        const addCounter = document.querySelector('.addCounter')
+        addCounter.addEventListener('click', () => {
+            const newElement = document.createElement('div')
+            let clickCount = 0
+            newElement.innerHTML = `<h1>${clickCount} clicks</h1>`
+            newElement.addEventListener('click', (e) => {
+                clickCount++
+                e.target.innerText= `${clickCount} clicks`
+            })
+            display.append(newElement)
+        })
+    </script>
+</html>

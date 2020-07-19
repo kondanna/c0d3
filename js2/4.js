@@ -16,7 +16,8 @@
  */
 
 const solution = (arr, cb) => {
-  return () => {}
+  return () => {
+  }
 }
 
 module.exports = {

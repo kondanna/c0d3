@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>JS1</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="timeDisplay"></h1>
+            <button class="start">Start</button>
+            <button class="pause">Pause</button>
+            <button class="stop">Stop</button>
+        </div>
+        <script type="text/javascript">
+            (function startApp() {
+                const displayElement = document.querySelector('.timeDisplay')
+                const pauseButton = document.querySelector('.pause')
+                displayElement.innerHTML = `<h1>00.00</h1>`
+                let timeElapsed = 0
+                let timerIsRunning = false
+                let timerIsStopped = false
+                document.querySelector('.start').onclick = () => {
+                    if (timerIsRunning) return
+                    timerIsRunning = true 
+                    setTimer()
+                }
+                pauseButton.onclick = () => {
+                    if (timerIsRunning || !timerIsStopped) {
+                        timerIsRunning = false 
+                        pauseButton.innerText = 'Unpause'
+                    } else {
+                        timerIsRunning = true
+                        setTimer()
+                        pauseButton.innerText = 'Pause'
+                    }    
+                }
+                document.querySelector('.stop').onclick = () => {
+                    displayElement.innerHTML = `<h1>00.00</h1>`
+                    pauseButton.innerText = 'Pause'
+                    timerIsRunning = false
+                    timerIsStopped = true 
+                    startApp()
+                }
+                function setTimer() {
+                    if (!timerIsRunning || timerIsStopped) return
+                    setTimeout(() => {
+                        timeElapsed += 10
+                        displayElement.innerHTML = `<h1>${msToSec(timeElapsed)}</h1>`
+                        setTimer()
+                    }, 10)
+                }
+                function msToSec(ms) {
+                    let t = ms / 1000
+                    let sec = Math.floor(t)
+                    let msec = Math.floor((ms % 1000) / 10)
+                    if (t < 10) {
+                        return `0${sec}.${msec}`  
+                    }
+                    return `${sec}.${msec}`
+                }
+            })()
+        </script>
+    </body>
+</html>

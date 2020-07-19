@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Typewriter</title>
+    </head>
+    <body>
+        <input class="input" type="text"/>
+        <div class="typeDisplay"></div>
+        <div class="display"></div>
+    </body>
+    <script>
+        const input = document.querySelector('.input')
+        const typeDisplay = document.querySelector('.typeDisplay')
+        const display = document.querySelector('.display')
+        const logs = []
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                logs.unshift(input.value)
+                renderLogs()
+                input.value = ''
+            }
+            typeDisplay.innerText = input.value
+        })
+        
+        const renderLogs = () => {
+            display.innerHTML = logs.reduce((acc, e) => `${acc}<h1>${e}</h1>`, '')
+            typeDisplay.innerHTML = ''
+        }
+    </script>
+</html>
