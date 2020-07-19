@@ -33,12 +33,12 @@
 
         image.onmousemove = (e) => {
             const scale = { x: 1263/421, y: 503/168 }
-            const containerOffset = { x: image.offsetLeft, y: image.offsetTop }
+            const imageOffset = { x: image.offsetLeft, y: image.offsetTop }
             const scopeOffset = { x: e.offsetX, y: e.offsetY }
 
             scopeContainer.style.display = 'block'
-            scopeContainer.style.left = `${containerOffset.x + scopeOffset.x - 100}px`
-            scopeContainer.style.top = `${containerOffset.y + scopeOffset.y - 100}px`
+            scopeContainer.style.left = `${imageOffset.x + scopeOffset.x - 100}px`
+            scopeContainer.style.top = `${imageOffset.y + scopeOffset.y - 100}px`
             scopeContainer.style.backgroundPositionX = `${-1 * scopeOffset.x * scale.x + 100}px`
             scopeContainer.style.backgroundPositionY = `${-1 * scopeOffset.y * scale.y + 100}px`
         }
