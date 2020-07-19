@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+        <style>
+            i {
+                font-size: 30px;
+                cursor: pointer;
+                color: yellow;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="stars"></div>
+        <div class="status"></div>
+        <script>
+            const stars = document.querySelector('.stars')
+            const status = document.querySelector('.status')
+            let clicked = false
+            stars.onmouseenter = () => {
+                clicked = false 
+            }
+
+            const toggleClass = (el, addClass, removeClass) => {
+                el.classList.add(addClass)
+                el.classList.remove(removeClass)
+            }
+
+            const fillStars = (idx) => {
+                starElements.forEach((star, i) => {
+                    i <= idx ? toggleClass(star, 'fas', 'far') : toggleClass(star, 'far', 'fas')
+                })
+            }
+
+            function makeStar(idx) {
+                const el = document.createElement('i')
+                el.className = 'fa-star far'
+
+                el.onmouseenter = () => {
+                    if (clicked) return 
+                    fillStars(idx)
+                    status.innerText = `You are giving ${idx + 1} stars!`
+                }
+                el.onclick = () => {
+                    clicked = true 
+                    fillStars(idx)
+                    status.innerText = `You have given ${idx + 1} stars!`
+                }
+                return el
+            }
+
+            let starElements = ['','','','',''].map((_, i) => {
+                const star = makeStar(i)
+                stars.append(star)
+                return star
+            })
+        </script>
+    </body>
+</html>
