@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Block Game</title>
+    </head>
+    <style>
+        .block {
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            border: solid 1px white;
+            box-sizing: border-box;
+            background-color: gray;
+        }
+        .light {
+            background-color: aquamarine;
+        }
+    </style>
+    <body>
+        <div id="gameContainer"></div>
+    </body>
+    <script>
+        let grid = [] // game state stored as block objects
+
+        const checkLights = (row=0, idx=0) => { 
+            if (row === grid.length) {
+                const newSize = +prompt("You won! Enter new size to keep playing:") || 2
+                grid = []
+                gameContainer.innerHTML = ''
+                return makeGrid(newSize) 
+            }
+            if (idx === grid.length) return checkLights(row+1, 0)
+            if (grid[row][idx].lightOn) return 
+            return checkLights(row, idx+1)
+        }
+
+        const toggleLight = (blockObj) => {
+            blockObj.lightOn = !blockObj.lightOn
+            blockObj.blockEl.className = blockObj.lightOn ? 'block light' : 'block'
+        }
+
+        const makeBlock = (row, idx, lightOn=false) => {
+            const blockEl = document.createElement('div')
+            blockEl.className = 'block'
+            blockEl.onclick = () => {
+                if (!grid[row][idx].lightOn) return 
+                toggleLight(grid[row][idx])
+                if (grid[row-1]) toggleLight(grid[row-1][idx])
+                if (grid[row+1]) toggleLight(grid[row+1][idx])
+                if (grid[row][idx-1]) toggleLight(grid[row][idx-1])
+                if (grid[row][idx+1]) toggleLight(grid[row][idx+1])
+                checkLights()
+            }
+            gameContainer.appendChild(blockEl)
+            return {row, idx, lightOn, blockEl} // DOM element inside block object
+        }
+
+        const makeGrid = (size, rows=0, idx=0, row=[]) => {
+            if (rows === size) {
+                gameContainer.style.width = `${50*size}px`
+                const random = { // places light on random block
+                    x: Math.floor(Math.random() * size),
+                    y: Math.floor(Math.random() * size)
+                } 
+                return toggleLight(grid[random.x][random.y])
+            }
+            if (idx === size) {
+                grid.push(row)
+                return makeGrid(size, rows+1, 0, [])
+            }
+            // const block = makeBlock(grid.length, idx)
+            // gameContainer.appendChild(block.blockEl)
+            row.push(makeBlock(grid.length, idx))
+            return makeGrid(size, rows, idx+1, row)
+        }
+        makeGrid(2) // initial grid 2x2
+        console.log(grid)
+    </script>
+</html>
