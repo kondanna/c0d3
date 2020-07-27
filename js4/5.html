@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Kanban</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+    <script>
+        let todoState = JSON.parse(localStorage.getItem('kanban')) || {}
+        const prevStates = [] // an array of todoStates for undo button
+
+        const renderTodo = (id, {type, text}) => {
+            const todoEl = document.createElement('div')
+            todoEl.className = `${type} todoItem`
+            todoEl.id = id
+            const arrow = (id, direction, destination) => {
+                return `<div class="arrow" id="${id}"  destination="${destination}">${direction}</div>`
+            }
+            if (type == 'todo') todoEl.innerHTML = `<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'doing')}`
+            if (type == 'doing') todoEl.innerHTML = `${arrow(id, '<', 'todo')}<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'done')}`
+            if (type == 'done') todoEl.innerHTML = `${arrow(id, '<', 'doing')}<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'approved')}`
+            if (type == 'approved') todoEl.innerHTML = `${arrow(id, '<', 'done')}<div class="item" id=${id}>${text}</div>`
+            return todoEl
+        }
+
+        container.onclick = (e) => {
+            const todoType = e.target.id // todo, doing, done, approved
+            const input = document.querySelector(`#${todoType}-input`)
+            if (e.target.className === 'submit' && input.value !== '') { // push new todo object and add to DOM
+                prevStates.push({...todoState})
+                todoState[`${todoType}${Date.now().toString().slice(-6)}`] = {type: todoType, text: input.value}
+                render(todoState)
+            }
+            if (e.target.className === 'arrow') {
+                prevStates.push({...todoState})
+                todoState[e.target.id].type = e.target.getAttribute('destination')
+                render(todoState)
+            }
+            if (e.target.className === 'item') {
+                prevStates.push({...todoState})
+                todoState[e.target.id] = null
+                render(todoState)
+            }
+            if (e.target.id === 'undo' && prevStates.length !== 0) {
+                todoState = prevStates.pop()
+                render(todoState)
+            }
+        }
+
+        const render = (state) => {
+            localStorage.setItem('kanban', JSON.stringify(todoState))
+            container.innerHTML = ''
+            const todoTypes = [{type:'todo', color:'#35235D'}, {type:'doing', color:'#CB2402'}, {type:'done', color:'#4C49A2'}, {type:'approved', color:'#A31A48'}]
+            todoTypes.forEach(todoType => {
+                const todoListEl = document.createElement('div')
+                todoListEl.className = 'todoList'
+                todoListEl.id = todoType.type
+                container.appendChild(todoListEl)
+            })
+            // populate todo lists
+            Object.keys(state).forEach(todoID => {
+                if (state[todoID]) {
+                    const todo = state[todoID]
+                    document.querySelector(`#${todo.type}`).appendChild(renderTodo(todoID, todo))
+                }   
+            })
+            // wrap each list with title and input divs
+            document.querySelectorAll('.todoList').forEach((todoList,idx) => {
+                const titleEl = document.createElement('div')
+                titleEl.className = 'title'
+                titleEl.style.backgroundColor = todoTypes[idx].color
+                titleEl.innerHTML = `<div>${todoList.id}</div>`
+                todoList.prepend(titleEl)
+
+                const inputEl = document.createElement('div')
+                inputEl.className = 'inputContainer'
+                inputEl.innerHTML = `
+                    <textarea id="${todoList.id}-input"></textarea>
+                    <button class="submit" id="${todoList.id}">Submit</button>`
+                todoList.appendChild(inputEl)
+            })
+
+            const undoButton = document.createElement('button')
+            undoButton.id = 'undo'
+            undoButton.innerText = 'Undo'
+            container.appendChild(undoButton)
+        }
+
+        render(todoState)
+    </script>
+</html>
