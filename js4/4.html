@@ -68,8 +68,6 @@
                 grid.push(row)
                 return makeGrid(size, rows+1, 0, [])
             }
-            // const block = makeBlock(grid.length, idx)
-            // gameContainer.appendChild(block.blockEl)
             row.push(makeBlock(grid.length, idx))
             return makeGrid(size, rows, idx+1, row)
         }

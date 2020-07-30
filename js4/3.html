@@ -3,13 +3,13 @@
     <head>
         <title>World's Fair</title>
         <style>
-            .image {
+            #image {
                 display: block;
                 margin: auto;
                 cursor: none;
             }
 
-            .scopeContainer {
+            #scopeContainer {
                 display: none;
                 position: fixed;
                 background: url(https://c0d3.com/challenges/assets/fair/big.jpg);
@@ -21,16 +21,13 @@
     </head>
     <body>
         <div>
-            <img class="image" src="https://c0d3.com/challenges/assets/fair/small.jpg" alt="World's Fair">
+            <img id="image" src="https://c0d3.com/challenges/assets/fair/small.jpg" alt="World's Fair">
         </div>
-        <div class="scopeContainer">
+        <div id="scopeContainer">
             <img class="scope" src="https://c0d3.com/challenges/assets/fair/scope.png" alt="Scope">
         </div>
     </body>
     <script>
-        const scopeContainer = document.querySelector('.scopeContainer')
-        const image = document.querySelector('.image')
-
         image.onmousemove = (e) => {
             const scale = { x: 1263/421, y: 503/168 } // large : small image dimensions
             const imageOffset = { x: image.offsetLeft, y: image.offsetTop }
