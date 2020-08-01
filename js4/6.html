@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Select</title>
+        <style>
+            #container {
+                width: 525px;
+            }
+            .box {
+                width: 100px;
+                height: 100px;
+                border: 5px blue solid;
+                margin: 0 5px 0 0;
+                box-sizing: border-box;
+                display: inline-block;
+            }
+            #selection {
+                pointer-events: none;
+                position: fixed;
+                left: 0px;
+                bottom: 0px;
+                background-color: rgba(0, 0, 0, 0.5);
+                border: blue 1px solid;
+                display: none;
+                -webkit-user-drag: none;
+                -khtml-user-drag: none;
+                -moz-user-drag: none;
+                -o-user-drag: none;
+            }
+            .selected {
+                background-color: aqua;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="selection"></div>
+    </body>
+    <script>
+        function box (row, index) {
+            const boxElement = document.createElement('div')
+            boxElement.classList.add('box')
+            return {row, index, boxElement}
+        }
+
+        const selectBoxes = (selectionStart, selectionEnd, gridState) => {
+            // find row and index of selection box created by mouse drag
+            const startIndex = Math.floor(selectionStart.x / 100)
+            const startRow = Math.floor(selectionStart.y / 100)
+            const endIndex = Math.floor(selectionEnd.x / 100)
+            const endRow = Math.floor(selectionEnd.y / 100)
+
+            gridState.forEach(row => {
+                row.forEach(box => {
+                    box.boxElement.classList.remove('selected')
+                    if (box.index >= startIndex && box.row >= startRow && box.index <= endIndex && box.row <= endRow) {
+                        box.boxElement.classList.add('selected')
+                    }
+                })
+            })
+        }
+
+        const renderGrid = (nRows, nCols, grid=[], fragment = new DocumentFragment(), temp=[], i=0) => {
+            if (grid.length === nRows) {
+                container.appendChild(fragment) // fragments for faster render
+                // document.querySelectorAll('.box')
+                return grid
+            }
+            if (i === nCols) {
+                grid.push(temp)
+                return renderGrid(nRows, nCols, grid, fragment)
+            }
+            const boxObj = box(grid.length, i)
+            temp.push(boxObj)
+            fragment.appendChild(boxObj.boxElement)
+            return renderGrid(nRows, nCols, grid, fragment, temp, ++i)
+        }
+
+        const gridState = renderGrid(5, 5)
+        let mouseDrag = false 
+        let mouseDownPos = {x: 0, y: 0}
+
+        container.onmousedown = (e) => {
+            mouseDrag = true 
+            mouseDownPos = {x: e.clientX, y: e.clientY}
+            selection.style.display = 'block'
+            selection.style.left = `${mouseDownPos.x}px`
+            selection.style.top = `${mouseDownPos.y}px`
+            selection.style.width = `${0}px`
+            selection.style.height = `${0}px`
+        }
+
+        container.onmouseup = (e) => {
+            mouseDrag = false
+            selection.style.display = 'none'
+        }
+
+        container.onmousemove = (e) => {
+            if (mouseDrag) {
+                // div corner 'renders' from top left position
+                const selectionStart = {x: Math.min(e.clientX, mouseDownPos.x), y: Math.min(e.clientY, mouseDownPos.y)}
+                const selectionEnd = {x: Math.max(e.clientX, mouseDownPos.x), y: Math.max(e.clientY, mouseDownPos.y)}
+                const boxDimensions = {width: Math.abs(e.clientX - mouseDownPos.x), height: Math.abs(e.clientY - mouseDownPos.y)}
+
+                selection.style.left = `${selectionStart.x}px`
+                selection.style.top = `${selectionStart.y}px`
+                selection.style.width = `${boxDimensions.width}px`
+                selection.style.height = `${boxDimensions.height}px`
+
+                selectBoxes(selectionStart, selectionEnd, gridState)
+            }
+        }
+    </script>
+</html>
