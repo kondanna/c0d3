@@ -26,8 +26,7 @@
     <div id='container'></div>
 </body>
 <script>
-    let board = []
-    let revealedCells = 0
+    const gameState = {board: [], revealedCells: 0}
     
     const makeCell = (row, col, bomb=false) => {
         const cellElement = document.createElement('div')
@@ -37,7 +36,7 @@
             cellElement.classList.add('flagged')
         }
         cellElement.onclick = () => { 
-            if (board[row][col].bomb) {
+            if (gameState.board[row][col].bomb) {
                 cellElement.style.backgroundColor = 'red'
                 if (confirm('You lost! Play again?')) {
                     startGame()
@@ -46,8 +45,8 @@
             }
             if (cellElement.classList.contains('reveal')) return
             cellElement.classList.add('reveal')
-            revealedCells++
-            const neighbors = getNeighborArray(row, col)
+            gameState.revealedCells++
+            const neighbors = getNeighborArray(gameState.board, row, col)
             const numBombs = neighbors.filter(cell => cell.bomb).length
             if (numBombs === 0) {
                 neighbors.forEach(cell => {
@@ -57,13 +56,10 @@
                 cellElement.innerText = numBombs
             }
             if (revealedCells >= board.length**2 * 0.9) {
-                if (confirm('You have won. Play again?')) {
-                    startGame()
-                }
+                if (confirm('You have won. Play again?')) startGame()
                 return
             }
         }
-        
         return {row, col, bomb, cellElement}
     }
 
@@ -92,7 +88,7 @@
         return placeBombs(board, nMines, i+1)
     }
 
-    const getNeighborArray = (row, col, arr=[]) => {
+    const getNeighborArray = (board, row, col, arr=[]) => {
         if (board[row-1] && board[row-1][col-1]) arr.push(board[row-1][col-1]) 
         if (board[row-1] && board[row-1][col]) arr.push(board[row-1][col]) 
         if (board[row-1] && board[row-1][col+1]) arr.push(board[row-1][col+1])  
@@ -106,8 +102,8 @@
 
     const startGame = () => {
         container.innerHTML = ''
-        revealedCells = 0
-        board = renderBoard()
+        gameState.revealedCells = 0
+        gameState.board = renderBoard()
     }
     startGame()
 </script>
