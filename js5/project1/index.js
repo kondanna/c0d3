@@ -8,6 +8,7 @@ const cors = require('cors')
 const { v4: uuid }= require('uuid')
 const { notStrictEqual } = require('assert')
 app.use(cors())
+const bcrypt = require('bcrypt')
 
 const upload = multer({dest: './public'}) // folder where uploads  go
 app.post('/files', upload.array('keyname')) // forms used for uploading file requires key/value pair
@@ -205,3 +206,18 @@ const parseCookie = (cookieStr, cookieKey) => {
 }
 
 app.listen(3000)
+
+// authentication
+// send password via encryption and POST method 
+// During signup / password reset:
+bcrypt.hash( user_password, SALT_ROUNDS, (err, hashPw) => {
+  // hashPw will be the encrypted password
+  // The higher the salt level, the slower the encryption
+})
+
+// During login, when we want to compare the passwords
+bcrypt.compare( user_password, hashPw, (err, result) => {
+  // if passwords matches, result will be truthy
+})
+// when sending user data response back, remove password field from user
+// delete user.password   
