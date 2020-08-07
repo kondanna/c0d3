@@ -28,6 +28,7 @@ fs.readFile('./todos.txt', (err, data) => {
 
 const app = express()
 app.use(express.json())
+app.use(express.static('public'))
 app.use(cors({
     credentials: true
 }))
