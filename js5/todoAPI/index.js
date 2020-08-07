@@ -28,7 +28,20 @@ fs.readFile('./todos.txt', (err, data) => {
 
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    credentials: true
+}))
+
+app.options('/api/todos/*', (req, res) => {
+    res.header('Access-Control-Allow-Credentials', true)
+    res.header('Access-Control-Allow-Origin', 'req.headers.origin') // req.headers.origin
+    res.header('Allow-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Credentials' 
+    )
+    res.send('ok')
+})
 
 app.get('/api/todos', (req, res) => {
     res.json(JSON.stringify(todos))
@@ -43,40 +56,36 @@ app.get('/api/todos/:id', (req, res) => {
 app.post('/api/todos', (req, res) => {
     const todo = req.body
     const todoId = uuid()
-    todos.push({id: todoId, text: todo.text, completed: todo.completed})
+    todos.unshift({id: todoId, text: todo.text, completed: false})
     fs.writeFile('./todos.txt', JSON.stringify(todos), () => { console.log('updated todos.txt')})
-    res.status(201).send(todoId)
+    res.status(201).json(todoId)
 })
 
 app.put('/api/todos/:id', (req, res) => {
-    const todoId = req.params.id 
-    console.log(req.params.id)
-    const newTodo = req.body
     todos.map(todo => {
-        if (todo.id === todoId) return newTodo 
+        if (todo.id === req.params.id) return req.body 
     })
     fs.writeFile('./todos.txt', JSON.stringify(todos), () => { console.log('updated todos.txt')})
-    res.status(204).send()
+    res.status(204).json()
 })
 
 app.patch('/api/todos/:id', (req, res) => {
-    const todoId = req.params.id 
-    const updatedTodo = req.body
+    console.log(req.body)
     todos.forEach(todo => {
-        if (todo.id === todoId) {
-            if (req.body.completed) todo.completed = updatedTodo.completed 
-            if (req.body.text) todo.text = updatedTodo.text
+        if (todo.id === req.params.id) {
+            if (req.body.hasOwnProperty('completed')) todo.completed = req.body.completed 
+            if (req.body.hasOwnProperty('text')) todo.text = req.body.text
         }
     })
+    console.log(todos)
     fs.writeFile('./todos.txt', JSON.stringify(todos), () => { console.log('updated todos.txt')})
-    res.status(204).send()
+    res.status(204).json()
 })
 
 app.delete('/api/todos/:id', (req, res) => {
-    const todoId = req.params.id 
-    todos = todos.filter(todo => todo.id !== todoId)
+    todos = todos.filter(todo => todo.id !== req.params.id )
     fs.writeFile('./todos.txt', JSON.stringify(todos), () => { console.log('updated todos.txt')})
-    res.status(204).send(todoId)
+    res.status(204).json(todoId)
 })
 
 app.listen(3000, () => {

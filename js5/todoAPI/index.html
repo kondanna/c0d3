@@ -1,5 +1,13 @@
 <head>
     <title>TodoList</title>
+    <style>
+        .completed {
+            text-decoration: line-through;
+        }
+        .todoItem {
+            display: inline-block;  
+        }
+    </style>
 </head>
 <body>
     <div class="header"></div>
@@ -11,28 +19,30 @@
     const $header = document.querySelector('.header')
     const $footer = document.querySelector('.footer')
 
-    const makeTodo = (id, text, completed=false) => {
+    const makeTodo = (id, text, completed) => {
         const $todoContainer = document.createElement('div')
-        $todoContainer.classList.add('todoItem')
         $todoContainer.innerHTML = `
-            <h1>${text}</h1>
-            <button class="editButton">Edit</button>
-            <button class="deleteButton">Delete</button>`
-        
-        $todoContainer.querySelector('.todoItem').onclick = () => {
+            <h3 class="todoItem ${completed ? 'completed' : 'pending'}">${text}</h3>
+            <button type="button" class="editButton">Edit</button>
+            <button type="button" class="deleteButton">Delete</button>`
+
+        const $todoItem = $todoContainer.querySelector('.todoItem')
+
+        $todoItem.onclick = (e) => {
+            e.preventDefault()
+            console.log(completed)
             // toggles strikethrough
             fetch(`http://localhost:3000/api/todos/${id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    completed: !completed
-                })
-            }).then(renderTodoContainer())
+                body: JSON.stringify({completed: !completed})
+            }).then(renderTodoContainer)
         }
         
-        $todoContainer.querySelector('.editButton').onclick = () => {
+        $todoContainer.querySelector('.editButton').onclick = (e) => {
+            e.preventDefault()
             const $editContainer = document.createElement('div')
             $editContainer.innerHTML = '<input class="edit" type="text">'
 
@@ -45,30 +55,33 @@
             $editContainer.appendChild($cancelButton)
 
             $todoContainer.appendChild($editContainer)
-            
-            $okButton.onclick = () => {
-                const editedTodo = $input.querySelector('.edit').value
+
+            $okButton.onclick = (e) => {
+                e.preventDefault()
+                const editedTodo = $editContainer.querySelector('.edit').value
                 fetch(`http://localhost:3000/api/todos/${id}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({text: editedTodo})
-                }).then(renderTodoContainer())
+                }).then(renderTodoContainer)
             }
 
             $cancelButton.onclick = () => {
+                e.preventDefault()
                 $input.remove()
             }
         }
         
-        $todoContainer.querySelector('.deleteButton').onclick = () => {
+        $todoContainer.querySelector('.deleteButton').onclick = (e) => {
+            e.preventDefault()
             fetch(`http://localhost:3000/api/todos/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).then(renderTodoContainer())
+            }).then(renderTodoContainer)
         }
 
         return { id, text, completed, $todoContainer }
@@ -78,33 +91,35 @@
 
     $footer.innerHTML = `
         <input class="newTodo" type="text">
-        <button class="submitNewTodo">Submit</button>`
+        <button type="button" class="submitNewTodo">Submit</button>`
 
-    $footer.querySelector('.submitNewTodo').onclick = () => {
+    $footer.querySelector('.submitNewTodo').onclick = (e) => {
+        e.preventDefault()
         const todoText = $footer.querySelector('.newTodo').value
         fetch('http://localhost:3000/api/todos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(todoText)
+            origin: 'http://127.0.0.1:5500/',
+            body: JSON.stringify({text: todoText})
         }).then(r => r.json()).then(todoId => {
             const newTodo = makeTodo(todoId, todoText)
-        }).then(renderTodoContainer())
+        }).then(renderTodoContainer)
     }
 
     const renderTodoContainer = () => {
-        const $fragment = new DocumentFragment()
+        $container.innerHTML = ''
         fetch('http://localhost:3000/api/todos')
             .then(r => r.json())
             .then(data => {
-                console.log(data)
-                data.forEach(todo => {
+                const arr = JSON.parse(data)
+                console.log(arr)
+                arr.forEach(todo => {
                     const {$todoContainer} = makeTodo(todo.id, todo.text, todo.completed)
-                    $fragment.appendChild($todoContainer)
+                    $container.appendChild($todoContainer)
                 })
             })
-        $container.appendChild($fragment)
     }
 
     renderTodoContainer()
