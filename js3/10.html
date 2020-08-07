@@ -12,9 +12,7 @@
     </body>
     <script>
         const render = (url) => {
-            fetch(url).then(response => {
-                return response.json()
-            }).then(data => {
+            fetch(url).then(r => r.json()).then(data => {
                 document.querySelector('.previous').onclick = () => {
                     render(data.previous)
                 }
@@ -22,9 +20,7 @@
                     render(data.next)
                 }
                 const fetchPromises = data.results.map(pokemon => {
-                    return fetch(pokemon.url).then(pokeDetails => {
-                        return pokeDetails.json() 
-                    })
+                    return fetch(pokemon.url).then(r => r.json())
                 })
                 return Promise.all(fetchPromises)
             }).then(pokeDetails => {
