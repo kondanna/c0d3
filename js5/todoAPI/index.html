@@ -1,0 +1,111 @@
+<head>
+    <title>TodoList</title>
+</head>
+<body>
+    <div class="header"></div>
+    <div class="container"></div>
+    <div class="footer"></div>
+</body>
+<script>
+    const $container = document.querySelector('.container')
+    const $header = document.querySelector('.header')
+    const $footer = document.querySelector('.footer')
+
+    const makeTodo = (id, text, completed=false) => {
+        const $todoContainer = document.createElement('div')
+        $todoContainer.classList.add('todoItem')
+        $todoContainer.innerHTML = `
+            <h1>${text}</h1>
+            <button class="editButton">Edit</button>
+            <button class="deleteButton">Delete</button>`
+        
+        $todoContainer.querySelector('.todoItem').onclick = () => {
+            // toggles strikethrough
+            fetch(`http://localhost:3000/api/todos/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    completed: !completed
+                })
+            }).then(renderTodoContainer())
+        }
+        
+        $todoContainer.querySelector('.editButton').onclick = () => {
+            const $editContainer = document.createElement('div')
+            $editContainer.innerHTML = '<input class="edit" type="text">'
+
+            const $okButton = document.createElement('button')
+            $okButton.innerText = 'OK'
+            $editContainer.appendChild($okButton)
+
+            const $cancelButton = document.createElement('button')
+            $cancelButton.innerText = "Cancel"
+            $editContainer.appendChild($cancelButton)
+
+            $todoContainer.appendChild($editContainer)
+            
+            $okButton.onclick = () => {
+                const editedTodo = $input.querySelector('.edit').value
+                fetch(`http://localhost:3000/api/todos/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({text: editedTodo})
+                }).then(renderTodoContainer())
+            }
+
+            $cancelButton.onclick = () => {
+                $input.remove()
+            }
+        }
+        
+        $todoContainer.querySelector('.deleteButton').onclick = () => {
+            fetch(`http://localhost:3000/api/todos/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(renderTodoContainer())
+        }
+
+        return { id, text, completed, $todoContainer }
+    }
+
+    $header.innerHTML = '<h1>Todos</h1>'
+
+    $footer.innerHTML = `
+        <input class="newTodo" type="text">
+        <button class="submitNewTodo">Submit</button>`
+
+    $footer.querySelector('.submitNewTodo').onclick = () => {
+        const todoText = $footer.querySelector('.newTodo').value
+        fetch('http://localhost:3000/api/todos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(todoText)
+        }).then(r => r.json()).then(todoId => {
+            const newTodo = makeTodo(todoId, todoText)
+        }).then(renderTodoContainer())
+    }
+
+    const renderTodoContainer = () => {
+        const $fragment = new DocumentFragment()
+        fetch('http://localhost:3000/api/todos')
+            .then(r => r.json())
+            .then(data => {
+                console.log(data)
+                data.forEach(todo => {
+                    const {$todoContainer} = makeTodo(todo.id, todo.text, todo.completed)
+                    $fragment.appendChild($todoContainer)
+                })
+            })
+        $container.appendChild($fragment)
+    }
+
+    renderTodoContainer()
+</script>
