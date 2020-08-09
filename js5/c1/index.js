@@ -4,43 +4,41 @@ const fs = require('fs')
 const fetch = require('node-fetch')
 const app = express()
 
-// database
-let visitors = {} // '37.251.220.49': {location: ..., visits: ...}, ...
+// database: an IP to data mapping and a city to count mapping
+const visitorStats = {} // '37.251.220.49': {city: {cityStr: 'Bucharest, RO', count: 2}, lat: ..., long: ..., ip: ...} 
+const visitorsPerCity = {}
+
 fs.readFile('db.json', (err, data) => {
     if (err) return console.log('error reading file')
     const str = data.toString()
-    if (str) visitors = JSON.parse(str)
+    if (str) visitorStats = JSON.parse(str)
 })
 
-// middleware settings
+const updateStats = ({city}) => { // {cityStr: {'Bucharest, RO' : 2}, lat: ..., long: ..., ip: ...}
+    visitorStats[city][count] = (visitorStats[city][count] || 0) + 1
+    fs.writeFile('./db.json', JSON.stringify(visitorsPerCity), () => { console.log('updated db.json') })
+}
+
+// middleware
 app.use(express.json())
-app.use(express.static('public'))
-app.use(cors())
 app.set('trust proxy', true)
-app.options('/api/*', (req, res) => {
-    res.header('Access-Control-Allow-Credentials', true)
-    res.header('Access-Control-Allow-Origin', req.headers.origin)
-    res.header('Allow-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
-    res.header(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, X-Forwarded-For, Content-Type, Accept, Credentials' 
-    )
-    res.send('ok')
+
+app.use(async (req, res, next) => {
+    if (visitorStats[req.ip]) { // if user has been here before increment visit count
+        updateStats(visitorStats[req.ip])
+        return next() 
+    } 
+    // if new visitor fetch location data
+    const {cityStr, ip, ll} = await fetch(`https://js5.c0d3.com/location/api/ip/${ip}`).then(r=> r.json())
+    visitorStats[ip] = {ip, lat: ll[0], long: ll[1], city: {cityStr, count: 0}}
+    updateStats(ip)
+    return next()
 })
-
 // routes
-app.get('/visitors', (req, res) => {
-    fetch(`https://js5.c0d3.com/location/api/ip/${req.ip}`)
-        .then(r => r.json())
-        .then(data => {
-            const location = data['cityStr']
-            const coordinates = {lat: data['11'][0], long: data['11'][1]}
-            visitors[req.ip] ? visitors[req.ip].count++ : visitors[req.ip] = {location, count: 1}
-            fs.writeFile('./db.json', JSON.stringify(visitors), () => { console.log('updated db.json') })
-
-            const $citiesAndCount = Object.keys(visitors).reduce((acc, k) => {
-                return `${acc}<li>${visitors[k].location} - ${visitors[k].count}</li>`
-            }, '')
+app.get('/visitor', (req, res) => {
+            const $citiesAndCount = Object.keys(visitorStats).reduce((acc, ipAddress) => {
+                return `${acc}<li>${visitorStats[ipAddress].cityStr} - ${visitorStats[k].count}</li>`
+            }, '')///////////
 
             res.send(`
                 <!DOCTYPE html>
@@ -53,7 +51,7 @@ app.get('/visitors', (req, res) => {
                 <h1>You are visiting from ${location}</h1>
                 <p>Your public IP is ${req.ip}</p>
                 <div id="map"></div>
-                <h1>The cities our visitors come from</h1>
+                <h1>The cities our visitorStats come from</h1>
                 <div><ul>${$citiesAndCount}</ul></div>
                 </body>
                 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB29pGpCzE_JGIEMLu1SGIqwoIbc0sHFHo&callback=currentMap"></script>
@@ -68,8 +66,8 @@ app.get('/visitors', (req, res) => {
         })
 })
 
-app.get('/visitors/api', (req, res) => {
-    res.json(JSON.stringify(visitors))
+app.get('/visitorStats/api', (req, res) => {
+    res.json(JSON.stringify(visitorStats))
 })
 
 app.listen('3000', () => { console.log('listening on port 3000') })
