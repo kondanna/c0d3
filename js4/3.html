@@ -1,47 +1,34 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>World's Fair</title>
-        <style>
-            #image {
-                display: block;
-                margin: auto;
-                cursor: none;
-            }
+<style>
+    #image {
+        display: block;
+        margin: auto;
+        cursor: none;
+    }
+    #scopeContainer {
+        display: none;
+        position: fixed;
+        background: url(https://c0d3.com/challenges/assets/fair/big.jpg);
+        clip-path: circle(95px at center);
+        background-repeat: no-repeat;
+        pointer-events: none;
+    }
+</style>
 
-            #scopeContainer {
-                display: none;
-                position: fixed;
-                background: url(https://c0d3.com/challenges/assets/fair/big.jpg);
-                clip-path: circle(95px at center);
-                background-repeat: no-repeat;
-                pointer-events: none;
-            }
-        </style>
-    </head>
-    <body>
-        <div>
-            <img id="image" src="https://c0d3.com/challenges/assets/fair/small.jpg" alt="World's Fair">
-        </div>
-        <div id="scopeContainer">
-            <img class="scope" src="https://c0d3.com/challenges/assets/fair/scope.png" alt="Scope">
-        </div>
-    </body>
-    <script>
-        image.onmousemove = (e) => {
-            const scale = { x: 1263/421, y: 503/168 } // large : small image dimensions
-            const imageOffset = { x: image.offsetLeft, y: image.offsetTop }
-            const scopeOffset = { x: e.offsetX, y: e.offsetY }
+<div>
+    <img id="image" src="https://c0d3.com/challenges/assets/fair/small.jpg" alt="World's Fair">
+</div>
+<div id="scopeContainer">
+    <img class="scope" src="https://c0d3.com/challenges/assets/fair/scope.png" alt="Scope">
+</div>
 
-            scopeContainer.style.display = 'block'
-            scopeContainer.style.left = `${imageOffset.x + scopeOffset.x - 100}px`
-            scopeContainer.style.top = `${imageOffset.y + scopeOffset.y - 100}px`
-            scopeContainer.style.backgroundPositionX = `${-1 * scopeOffset.x * scale.x + 100}px`
-            scopeContainer.style.backgroundPositionY = `${-1 * scopeOffset.y * scale.y + 100}px`
-        }
-
-        image.onmouseout = (e) => {
-            scopeContainer.style.display = 'none'
-        }
-    </script>
-</html>
+<script>
+    const scale = { x: 1263/421, y: 503/168 } // large : small image dimensions
+    image.onmousemove = e => {
+        scopeContainer.style.display = 'block'
+        scopeContainer.style.left = `${image.offsetLeft + e.offsetX - 100}px`
+        scopeContainer.style.top = `${image.offsetTop + e.offsetY - 100}px`
+        scopeContainer.style.backgroundPositionX = `${-1 * scopeOffset.x * scale.x + 100}px`
+        scopeContainer.style.backgroundPositionY = `${-1 * scopeOffset.y * scale.y + 100}px`
+    }
+    image.onmouseout = e => scopeContainer.style.display = 'none'
+</script>
