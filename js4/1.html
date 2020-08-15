@@ -1,43 +1,71 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Jaeger LeCoultre Series Two</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="watch-face">
-                <iframe 
-                    class="map" width="600" height="450" frameborder="0" style="border:0" allowfullscreen
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2732.6355038987144!2d23.58143731552768!3d46.77208065324336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47490e9b76fbbc17%3A0x673309310f315f5f!2sOpera%20Maghiara%20Est!5e0!3m2!1sen!2sro!4v1594659677452!5m2!1sen!2sro">
-                </iframe>
-                <div class="date-time">
-                    <br/>
-                    <h1 class="time"></h1>
-                    <h2 class="weekday"></h2>
-                    <h2 class="date"></h2>
-                </div>
-            </div>
-        </div>
-    </body>
-    <script>
-        const dateTime = document.querySelector('.date-time')
-        dateTime.onclick = () => {
-            dateTime.classList.toggle('fullscreen')
-        }
-        const date = new Date();
-        const fullDate = { 
-            year: date.getFullYear(),
-            month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()],
-            day: date.getDate(),
-            weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
-            hours: date.getHours() % 12,
-            minutes: date.getMinutes().length < 2 ? `0${date.getMinutes()}` : `${date.getMinutes()}`
-        }
+<style>
+    .container {
+        background: url(https://c0d3.com/challenges/assets/watch.jpg);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 600px;
+        height: 800px;
+    }
+    .watch-face {
+        position: relative;
+        margin: 207px auto auto 130px;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    .map {
+        margin-top: -140px;
+        margin-left: -140px;
+    }
+    .dateTime {
+        background-color: black;
+        position: absolute;
+        margin: auto;
+        cursor: cell;
+        top: 50%;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        color: white;
+    }
+    .fullscreen {
+        top: 0;
+    }
+    .time {
+        font-size: 5em;
+        margin-top: 30px;
+    }
+</style>>
 
-        document.querySelector('.time').innerText = `${fullDate.hours}:${fullDate.minutes}`
-        document.querySelector('.weekday').innerText = `${fullDate.weekday}`
-        document.querySelector('.date').innerText = `${fullDate.day} ${fullDate.month} ${fullDate.year}`
-        
-    </script>
-</html>
+<div class="container">
+    <div class="watch-face">
+        <iframe 
+            class="map" width="600" height="450" frameborder="0" style="border:0" allowfullscreen
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2732.6355038987144!2d23.58143731552768!3d46.77208065324336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47490e9b76fbbc17%3A0x673309310f315f5f!2sOpera%20Maghiara%20Est!5e0!3m2!1sen!2sro!4v1594659677452!5m2!1sen!2sro">
+        </iframe>
+        <div id="dateTime">
+            <br/>
+            <h1 class="time"></h1>
+            <h2 class="weekday"></h2>
+            <h2 class="date"></h2>
+        </div>
+    </div>
+</div>
+
+<script>
+    dateTime.onclick = () => dateTime.classList.toggle('fullscreen')
+    const date = new Date()
+    const fullDate = { 
+        year: date.getFullYear(),
+        month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()],
+        day: date.getDate(),
+        weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
+        hours: date.getHours() % 12,
+        minutes: date.getMinutes().length < 2 ? `0${date.getMinutes()}` : `${date.getMinutes()}`
+    }
+    document.querySelector('.time').innerText = `${fullDate.hours}:${fullDate.minutes}`
+    document.querySelector('.weekday').innerText = `${fullDate.weekday}`
+    document.querySelector('.date').innerText = `${fullDate.day} ${fullDate.month} ${fullDate.year}`
+</script>
