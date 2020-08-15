@@ -1,0 +1,23 @@
+<style type="text/css">
+    #editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
+<input type="text" id="fileName"><button id="createNewFile"></button>
+<div id="nav"></div> 
+<div id="editor"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    const $fileNameInput = document.querySelector('#fileName')
+    const $createNewFile = document.querySelector('#createNewFile')
+    const $nav = document.querySelector('#nav')
+    const $editor = ace.edit('editor')
+    $editor.setTheme('ace/theme/textmate')
+    // if extension *.js: $editor.session.setMode("ace/mode/javascript")
+
+    
+</script>
