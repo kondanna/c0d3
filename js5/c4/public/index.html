@@ -1,0 +1,42 @@
+<style type="text/css">
+    #inputbar {
+        position: fixed;
+        top: 0;
+        left: 160;
+        height: 30px;
+        
+    }
+    #fileName {
+        padding: auto;
+        display: inline-block;
+        width: 100%;
+    }
+    #editor {
+        position: fixed;
+        top: 30;
+        left: 160;
+        right: 0;
+        bottom: 0;
+    }
+    #sidebar {
+        height: 100%;
+        width: 160px;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+</style>
+<div id="inputbar"><input type="text" id="fileName"><button id="createNewFile">Create File</button></div>
+<div id="sidebar"><a href="/">First link</a></div> <!-- Side navigation -->
+<div id="editor"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    const $fileNameInput = document.querySelector('#fileName')
+    const $createNewFile = document.querySelector('#createNewFile')
+    const $sidebar = document.querySelector('#sidebar')
+    const $editor = ace.edit('editor')
+    $editor.setTheme('ace/theme/textmate')
+    // if extension *.js: $editor.session.setMode("ace/mode/javascript")
+
+    
+</script>
