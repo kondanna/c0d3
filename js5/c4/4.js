@@ -1,6 +1,5 @@
 const express = require('express')
 const fs = require('fs')
-const { uuid } = require('uuidv4')
 
 app = express()
 app.use(express.static('public'))
@@ -14,9 +13,9 @@ fs.readFile('./files.json', (_err, data) => {
 
 app.post('/api/files', (req, res) => {
     const {name, content} = req.body
-    const id = uuid()
-    const lastSeen = Date.now() 
-    filesData[id] = {name, lastSeen}
+    const lastSeen = Date.now()
+    filesData[name] = {name, lastSeen}
+    cache[name] = content
     fs.writeFile(`./public/files/${name}`, content, () => { console.log('new file added')})
     fs.writeFile('./files.json', JSON.stringify(filesData), () => {})
 })
