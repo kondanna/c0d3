@@ -12,14 +12,13 @@ fs.readFile('./files.json', (_err, data) => {
 })
 
 const cleanFiles = () => {
-    const now = Date.now()
     Object.keys(filesData).forEach(fileName => {
-        if (now - filesData[fileName]['lastSeen'] > 300000) {
-            fs.unlink(`./public/${fileName}`, (err) => {
-                return console.log(err)
-            })
+        if (Date.now() - filesData[fileName]['lastSeen'] > 300000) {
+            fs.unlink(`./public/${fileName}`, () => {})
+            delete filesData[fileName]
         } 
     })
+    fs.writeFile('./files.json', JSON.stringify(filesData), () => {})
     setTimeout(cleanFiles, 60000)
 }
 
@@ -39,10 +38,10 @@ app.get('/api/files/:filename', (req, res) => {
     })
 })
 
-app.get('/api/files', (req, res) => {// returns sorted array of all filenames
+app.get('/api/files', (req, res) => {
     fs.readdir('./public/files', (_err, filesArr) => { 
-        res.json(JSON.stringify(filesArr.sort()))
+        res.json(filesArr.sort())
     })
 })
 
-app.listen(3000, () => { cleanFiles() })
+app.listen(3000, cleanFiles)
