@@ -31,12 +31,25 @@
 <div id="editor"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js" type="text/javascript" charset="utf-8"></script>
 <script>
-    const $fileNameInput = document.querySelector('#fileName')
-    const $createNewFile = document.querySelector('#createNewFile')
-    const $sidebar = document.querySelector('#sidebar')
     const $editor = ace.edit('editor')
     $editor.setTheme('ace/theme/textmate')
-    // if extension *.js: $editor.session.setMode("ace/mode/javascript")
 
+    fetch('https://localhost:3000/api/files')
+        .then(r => r.json()).then(data => {
+            data.forEach(fileName => {
+                const fileDiv = document.createElement('div')
+                fileDiv.innerHTML = `
+                    <a href="/files/${fileName}">${fileName}</a>`
+                fileDiv.onclick = () => {
+                    // put file contents inside $editor
+                    // $editor.setValue()
+                }
+                document.querySelector('#sidebar').appendChild(fileDiv)
+            })
+        })
     
+    document.querySelector('#createNewFile').onclick = () => {
+        const $fileNameInput = document.querySelector('#fileName').value
+        const content = $editor.getValue() 
+    }
 </script>
