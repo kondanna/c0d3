@@ -1,0 +1,75 @@
+<style type="text/css">
+    #inputbar {
+        position: fixed;
+        padding-top: 5px;
+        top: 0;
+        left: 160;
+        height: 30px;
+    }
+    #fileName {
+        padding: auto;
+        display: inline-block;
+    }
+    #editor {
+        position: fixed;
+        top: 30;
+        left: 160;
+        right: 0;
+        bottom: 0;
+    }
+    #sidenav {
+        width: 160px;
+        top: 0;
+        left: 0;
+    }
+    #sidenav div {
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+</style>
+<div id="inputbar"><input type="text" id="fileName"><button id="createNewFile">Create File</button></div>
+<div id="sidenav"></div> 
+<div id="editor"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    const $sidenav = document.querySelector('#sidenav')
+    const $editor = ace.edit('editor')
+    $editor.setTheme('ace/theme/textmate')
+
+    const render = () => {
+        $sidenav.innerHTML = ''
+        fetch('http://localhost:3000/api/files')
+        .then(r => r.json()).then(data => {
+            if (!data || !data.length) return
+            data.forEach(fileName => {
+                const fileDiv = document.createElement('div')
+                fileDiv.innerHTML = `<a href="/files/${fileName}">${fileName}</a>`
+                fileDiv.onclick = () => {
+                    fetch(`http://localhost:3000/api/files/${fileName}`)
+                        .then(r => r.json()).then(data => {
+                            $editor.setValue(data.content)
+                        })
+                }
+                $sidenav.appendChild(fileDiv)
+            })
+        })
+    }
+
+    document.querySelector('#createNewFile').onclick = () => {
+        const $fileNameInput = document.querySelector('#fileName')
+        if (!$fileNameInput.value) return alert('You must enter a file name.')
+        fetch(`http://localhost:3000/api/files`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: $fileNameInput.value,
+                content: $editor.getValue() 
+            })
+        }).then(render)
+    }
+
+    render()
+</script>
