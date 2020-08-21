@@ -1,0 +1,131 @@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/sketchy/bootstrap.min.css">
+
+<div class="appContainer"></div>
+<div class="footer"></div>
+
+<script>
+    const $appContainer = document.querySelector('.appContainer')
+
+    const renderMain = () => {
+        $appContainer.innerHTML = `
+            <h1>Enter Room</h1>
+            <input class="roomName" type="text" placeholder="room name">
+            <button class="enterRoom">Enter</button>`
+        
+        document.querySelector('.enterRoom').onclick = e => {
+            e.preventDefault()
+            const $roomNameInput = document.querySelector('.roomName')
+            renderRoom($roomNameInput.value)
+        }
+    }
+
+    const renderRoom = (roomName) => {
+        fetch(`http://localhost:3000/api/${roomName}/messages`)
+            .then(r => r.json()).then(messagesArray => {
+                $appContainer.innerHTML = messagesArray.reduce((acc, {user, message}) => {
+                    return `${acc}<br/><p>${user}: ${message}</p>`
+                }, `<h1>Room ${roomName}</h1>`)
+            })
+    }
+
+    const renderLogin = () => {
+        $appContainer.innerHTML = `
+            <h1>You must be logged in</h1>
+            <p> No Account? You can
+                <a href="#" class="instead">Sign up instead</a>
+            </p>
+            <input class="username" type="text" placeholder="username">
+            <input class="password" type="password" placeholder="password">
+            <button class="login">Login</button>`
+
+        document.querySelector('.instead').onclick = e => {
+            e.preventDefault()
+            renderSignUp()
+        }
+
+        document.querySelector('.login').onclick = e => {
+            e.preventDefault()
+            const $username = document.querySelector('.username')
+            const $password = document.querySelector('.password')
+
+            fetch('https://js5.c0d3.com/auth/api/sessions', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: $username.value,
+                    password: btoa($password.value)
+                })
+            }).then(r => r.json()).then(body => {
+                if (body.error) console.log('Error:', body.error)
+                if (body.username) {
+                    console.log('Success:', body)
+                    globalUsername = $username.value 
+                    renderMain()
+                }
+            })
+        }
+    }
+
+    const renderSignUp = () => {
+        $appContainer.innerHTML = `
+            <h1>New Account!</h1>
+            <p> Already have an account? You can
+            <a href="#" class="instead">Login instead</a>
+            </p>
+            <input class="name" type="text" placeholder="full name">
+            <input class="username" type="text" placeholder="username">
+            <input class="email" type="email" placeholder="email">
+            <input class="password" type="password" placeholder="password">
+            <button class="signUp">Sign Up</button>`
+
+        document.querySelector('.instead').onclick = e => {
+            renderLogin()
+        }
+
+        document.querySelector('.signUp').onclick = e => {
+            const $username = document.querySelector('.username')
+            const $email = document.querySelector('.email')
+            const $name = document.querySelector('.name')
+            const $password = document.querySelector('.password')
+
+            fetch('https://js5.c0d3.com/auth/api/users', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: $username.value, 
+                    email: $email.value,
+                    name: $name.value,
+                    password: btoa($password.value)
+                }),
+            }).then(r => r.json()).then(data => {
+                if (data.error) {
+                    console.log('Error:', data.error)
+                } else {
+                    console.log('Success:', data)
+                    globalUsername = $username.value 
+                    renderMain()
+                }
+            })
+        }
+    }
+
+    const startApp = () => {
+        fetch('https://js5.c0d3.com/auth/api/sessions', {
+            method: 'GET',
+            credentials: 'include',
+        }).then(r => r.json()).then(body => {
+            if (body.error) return renderLogin()
+            if (body.username) {
+                globalUsername = body.username
+                renderMain()
+            }
+        })
+    }
+    startApp()
+</script>
