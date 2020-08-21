@@ -1,7 +1,6 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/sketchy/bootstrap.min.css">
 
 <div class="appContainer"></div>
-<div class="footer"></div>
 
 <script>
     const $appContainer = document.querySelector('.appContainer')
@@ -19,13 +18,24 @@
         }
     }
 
-    const renderRoom = (roomName) => {
-        fetch(`http://localhost:3000/api/${roomName}/messages`)
+    const renderRoom = roomName => {
+        $appContainer.innerHTML = `
+            <h1>Room ${roomName}</h1>
+            <input class="messageText" type="text" placeholder="your message">
+            <button class="submitMessage">Send</button>
+            <div class="messagesContainer"></div>`
+
+        document.querySelector('.submitMessage').onclick = e => {
+            e.preventDefault()
+            const $messagesContainer = document.querySelector('.messagesContainer')
+
+            fetch(`http://localhost:3000/api/${roomName}/messages`)
             .then(r => r.json()).then(messagesArray => {
-                $appContainer.innerHTML = messagesArray.reduce((acc, {user, message}) => {
+                $messagesContainer.innerHTML = messagesArray.reduce((acc, {user, message}) => {
                     return `${acc}<br/><p>${user}: ${message}</p>`
-                }, `<h1>Room ${roomName}</h1>`)
+                })
             })
+        }        
     }
 
     const renderLogin = () => {
