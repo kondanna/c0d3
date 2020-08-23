@@ -5,7 +5,6 @@ const fetch = require('node-fetch')
 const app = express()
 app.use(express.static('public'))
 app.use(express.json())
-
 app.use('/api', (req, res, next) => {
     fetch('https://js5.c0d3.com/auth/api/session', {
         headers: {
@@ -18,8 +17,8 @@ app.use('/api', (req, res, next) => {
             })
         }
         req.userInfo = data
+        next()
     }) 
-    next()
 })
 
 let messages = {} // {<roomName>: [{<user>, <message>}, ...], ...}
@@ -27,20 +26,16 @@ let messages = {} // {<roomName>: [{<user>, <message>}, ...], ...}
 app.get('/api/:room/messages', (req, res) => {
     fs.readFile('./messages.json', (err, data) => {
         if (err) return console.log(err)
-        messages = data
+        messages = JSON.parse(data)
     })
     res.json(messages[req.params.room])
 })
 
 app.post('/api/:room/messages', (req, res) => {
     const roomName = req.params.room
-    const message = req.body
-    fs.readFile('./messages.json', (err, data) => {
-        if (err) return console.log(err)
-        messages = data
-    })
-    const roomMessages = messages[roomName] || []
-    roomMessages.push({user: req.userInfo.username, message})
+    messages[roomName] = messages[roomName] || []
+    messages[roomName].push({user: req.userInfo.username, message: req.body.message})
+    console.log(messages)
     fs.writeFile(`./messages.json`, JSON.stringify(messages), () => console.log('added message'))
     res.json(messages[roomName])
 })

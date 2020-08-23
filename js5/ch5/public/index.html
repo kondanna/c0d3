@@ -3,8 +3,16 @@
 <div id="$appContainer"></div>
 
 <script>
-    const renderMain = () => {
-        const userInfo = JSON.parse(localStorage.getItem('usersession')) || {}
+    const startApp = () => {
+        fetch('https://js5.c0d3.com/auth/api/sessions', {
+            credentials: 'include'
+        }).then(r => r.json()).then(data => {
+            if (data.error) return renderLogin()
+            if (data.username) {
+                sessionStorage.setItem('usersession', JSON.stringify(data))
+            }
+        })
+
         $appContainer.innerHTML = `
             <h1>Enter Room Name</h1>
             <div class="container">
@@ -16,11 +24,14 @@
     }
     
     const renderRoom = roomName => {
-        const userInfo = JSON.parse(localStorage.getItem('usersession')) || {}
+        const userInfo = JSON.parse(sessionStorage.getItem('usersession')) || {}
+        if (!userInfo.username || !userInfo.jwt) return renderLogin()
+
         $appContainer.innerHTML = `
-            <h1>Room: ${roomName}</h1>
+            <h3>Hello, ${userInfo.username}. You are in room: ${roomName}</h3>
             <input id="$messageInput" type="text" placeholder="your message">
             <button id="$submitMessage">Send</button>
+            <hr>
             <div id="$messagesContainer""></div>`
 
         const fetchMessages = () => {
@@ -30,12 +41,11 @@
                 }
             }).then(r => r.json()).then(data => {
                     $messagesContainer.innerHTML = data.reduce((acc, {user, message}) => {
-                        return `${acc}<br/><p>${user}: ${message}</p>`
+                        return `${acc}<p>${user}: ${message}</p>`
                     }, '')
                 })
-            setTimeOut(() => {
-                fetchMessages()
-            }, 1000)
+
+            setTimeout(fetchMessages, 500)
         }
 
         $submitMessage.onclick = e => {            
@@ -50,6 +60,7 @@
                     message: $messageInput.value
                 })
             }).then(fetchMessages())
+
             $messageInput.value = ''
         }        
 
@@ -82,8 +93,8 @@
             }).then(r => r.json()).then(data => {
                 if (data.error) return console.log('Error:', data.error)
                 if (data.username) {
-                    localStorage.setItem('usersession', JSON.stringify(data))
-                    renderMain()
+                    sessionStorage.setItem('usersession', JSON.stringify(data))
+                    startApp()
                 }
             })
         }
@@ -119,22 +130,10 @@
             }).then(r => r.json()).then(data => {
                 if (data.error) return console.log('Error:', data.error)
                 console.log('Success:', data)
-                localStorage.setItem('usersession', JSON.stringify(data))
-                renderMain()
+                sessionStorage.setItem('usersession', JSON.stringify(data))
+                startApp()
             })
         }
-    }
-
-    const startApp = () => {
-        fetch('https://js5.c0d3.com/auth/api/sessions', {
-            credentials: 'include'
-        }).then(r => r.json()).then(data => {
-            if (data.error) return renderLogin()
-            if (data.username) {
-                localStorage.setItem('usersession', JSON.stringify(data))
-                renderMain()
-            }
-        })
     }
 
     startApp()
