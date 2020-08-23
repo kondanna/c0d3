@@ -1,66 +1,77 @@
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/sketchy/bootstrap.min.css">
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.7.0/dist/paper.min.css">
 
-<div class="appContainer"></div>
+<div id="$appContainer"></div>
 
 <script>
-    const $appContainer = document.querySelector('.appContainer')
-
     const renderMain = () => {
+        const userInfo = JSON.parse(localStorage.getItem('usersession')) || {}
         $appContainer.innerHTML = `
-            <h1>Enter Room</h1>
-            <input class="roomName" type="text" placeholder="room name">
-            <button class="enterRoom">Enter</button>`
+            <h1>Enter Room Name</h1>
+            <div class="container">
+            <input id="$roomName" type="text" placeholder="room name">
+            <button id="$enter">Enter</button>
+            </div>`
         
-        document.querySelector('.enterRoom').onclick = e => {
-            e.preventDefault()
-            const $roomNameInput = document.querySelector('.roomName')
-            renderRoom($roomNameInput.value)
-        }
+        $enter.onclick = e => renderRoom($roomName.value)
     }
-
+    
     const renderRoom = roomName => {
+        const userInfo = JSON.parse(localStorage.getItem('usersession')) || {}
         $appContainer.innerHTML = `
-            <h1>Room ${roomName}</h1>
-            <input class="messageText" type="text" placeholder="your message">
-            <button class="submitMessage">Send</button>
-            <div class="messagesContainer"></div>`
+            <h1>Room: ${roomName}</h1>
+            <input id="$messageInput" type="text" placeholder="your message">
+            <button id="$submitMessage">Send</button>
+            <div id="$messagesContainer""></div>`
 
-        document.querySelector('.submitMessage').onclick = e => {
-            e.preventDefault()
-            const $messagesContainer = document.querySelector('.messagesContainer')
-
-            fetch(`http://localhost:3000/api/${roomName}/messages`)
-            .then(r => r.json()).then(messagesArray => {
-                $messagesContainer.innerHTML = messagesArray.reduce((acc, {user, message}) => {
-                    return `${acc}<br/><p>${user}: ${message}</p>`
+        const fetchMessages = () => {
+            fetch(`http://localhost:3000/api/${roomName}/messages`, {
+                headers: {
+                    Authorization: `Bearer ${userInfo.jwt}`
+                }
+            }).then(r => r.json()).then(data => {
+                    $messagesContainer.innerHTML = data.reduce((acc, {user, message}) => {
+                        return `${acc}<br/><p>${user}: ${message}</p>`
+                    }, '')
                 })
-            })
+            setTimeOut(() => {
+                fetchMessages()
+            }, 1000)
+        }
+
+        $submitMessage.onclick = e => {            
+            fetch(`http://localhost:3000/api/${roomName}/messages`, {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${userInfo.jwt}`
+                },
+                body: JSON.stringify({
+                    user: userInfo.username,
+                    message: $messageInput.value
+                })
+            }).then(fetchMessages())
+            $messageInput.value = ''
         }        
+
+        fetchMessages()
     }
 
     const renderLogin = () => {
         $appContainer.innerHTML = `
             <h1>You must be logged in</h1>
             <p> No Account? You can
-                <a href="#" class="instead">Sign up instead</a>
+                <a href="/" id="$instead">Sign up instead</a>
             </p>
-            <input class="username" type="text" placeholder="username">
-            <input class="password" type="password" placeholder="password">
-            <button class="login">Login</button>`
+            <input id="$username" type="text" placeholder="username">
+            <input id="$password" type="password" placeholder="password">
+            <button id="$login">Login</button>`
 
-        document.querySelector('.instead').onclick = e => {
-            e.preventDefault()
-            renderSignUp()
-        }
+        $instead.onclick = e => renderSignUp()
 
-        document.querySelector('.login').onclick = e => {
-            e.preventDefault()
-            const $username = document.querySelector('.username')
-            const $password = document.querySelector('.password')
-
+        $login.onclick = e => {
             fetch('https://js5.c0d3.com/auth/api/sessions', {
-                method: 'POST',
-                credentials: 'include',
+                method: 'POST', 
+                credentials: 'include', 
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -68,11 +79,10 @@
                     username: $username.value,
                     password: btoa($password.value)
                 })
-            }).then(r => r.json()).then(body => {
-                if (body.error) console.log('Error:', body.error)
-                if (body.username) {
-                    console.log('Success:', body)
-                    globalUsername = $username.value 
+            }).then(r => r.json()).then(data => {
+                if (data.error) return console.log('Error:', data.error)
+                if (data.username) {
+                    localStorage.setItem('usersession', JSON.stringify(data))
                     renderMain()
                 }
             })
@@ -83,29 +93,22 @@
         $appContainer.innerHTML = `
             <h1>New Account!</h1>
             <p> Already have an account? You can
-            <a href="#" class="instead">Login instead</a>
+            <a href="/" id="$instead">Login instead</a>
             </p>
-            <input class="name" type="text" placeholder="full name">
-            <input class="username" type="text" placeholder="username">
-            <input class="email" type="email" placeholder="email">
-            <input class="password" type="password" placeholder="password">
-            <button class="signUp">Sign Up</button>`
+            <input id="$name" type="text" placeholder="full name">
+            <input id="$username" type="text" placeholder="username">
+            <input id="$email" type="email" placeholder="email">
+            <input id="$password" type="password" placeholder="password">
+            <button id="$signUp">Sign Up</button>`
 
-        document.querySelector('.instead').onclick = e => {
-            renderLogin()
-        }
-
-        document.querySelector('.signUp').onclick = e => {
-            const $username = document.querySelector('.username')
-            const $email = document.querySelector('.email')
-            const $name = document.querySelector('.name')
-            const $password = document.querySelector('.password')
-
+        $instead.onclick = e => renderLogin()
+        
+        $signUp.onclick = e => {
             fetch('https://js5.c0d3.com/auth/api/users', {
-                method: 'POST',
-                credentials: 'include',
+                method: 'POST', 
+                credentials: 'include', 
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     username: $username.value, 
@@ -114,28 +117,25 @@
                     password: btoa($password.value)
                 }),
             }).then(r => r.json()).then(data => {
-                if (data.error) {
-                    console.log('Error:', data.error)
-                } else {
-                    console.log('Success:', data)
-                    globalUsername = $username.value 
-                    renderMain()
-                }
+                if (data.error) return console.log('Error:', data.error)
+                console.log('Success:', data)
+                localStorage.setItem('usersession', JSON.stringify(data))
+                renderMain()
             })
         }
     }
 
     const startApp = () => {
         fetch('https://js5.c0d3.com/auth/api/sessions', {
-            method: 'GET',
-            credentials: 'include',
-        }).then(r => r.json()).then(body => {
-            if (body.error) return renderLogin()
-            if (body.username) {
-                globalUsername = body.username
+            credentials: 'include'
+        }).then(r => r.json()).then(data => {
+            if (data.error) return renderLogin()
+            if (data.username) {
+                localStorage.setItem('usersession', JSON.stringify(data))
                 renderMain()
             }
         })
     }
+
     startApp()
 </script>
