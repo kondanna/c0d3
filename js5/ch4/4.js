@@ -15,10 +15,9 @@ const cleanFiles = () => {
     const now = Date.now()
     Object.keys(filesData).forEach(fileName => {
         if (now - filesData[fileName]['lastSeen'] > 300000) {
-            console.log('Removing file: ', fileName)
-            fs.unlink(`./public/files/${fileName}`, () => {})
+            fs.unlink(`./public/files/${fileName}`, () => { console.log('Removing file: ', fileName) })
             delete filesData[fileName]
-        } 
+        }
     })
     fs.writeFile('./files.json', JSON.stringify(filesData), () => {})
     setTimeout(cleanFiles, 60000)
@@ -31,7 +30,7 @@ app.post('/api/files', (req, res) => {
     fs.writeFile('./files.json', JSON.stringify(filesData), () => {})
     res.json({name})
 })
-
+    
 app.get('/api/files/:filename', (req, res) => { 
     const fileName = req.params.filename
     filesData[fileName]['lastSeen'] = Date.now()
