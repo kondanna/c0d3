@@ -32,7 +32,7 @@ app.post('/files', upload.array('images'), (req, res) => {
             }
         })
     })
-    res.json({id})
+    res.status(202).json({id, url: `/api/job/${id}`})
 })
 
 app.get('/api/job/:id', (req, res) => {

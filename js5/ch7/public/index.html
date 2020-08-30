@@ -54,7 +54,6 @@
                     fetch(`/api/job/${data.id}`)
                     .then(r => r.json()).then(({completed, results}) => {
                         if (completed) $cardBody.innerHTML = `<p>Result: ${results[$cardBody.id].data.text}</p>`
-                        return $cardBody.innerHTML = `<p>Still working on job ${data.id}... click periodically to view status</p>`
                     })
                 }
             })
