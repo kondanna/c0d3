@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.7.0/dist/paper.min.css">
+<style>
+    .grid { 
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-gap: 10px;
+        align-items: stretch;
+    }
+</style>
+
+<div id="$dropZone" class="container" name="images" style="text-align: center; height: 100%;">
+    <h2>Drag image(s) here</h2>
+    <div id="$imagesContainer" class="grid"></div>
+</div>
+
+<script>
+    $dropZone.ondragover = e => {
+        e.stopPropagation()
+        e.preventDefault()
+        $dropZone.classList.add('alert-primary')
+    }
+
+    $dropZone.ondrop = e => {
+        e.stopPropagation()
+        e.preventDefault()
+        $dropZone.classList.remove('alert-primary')
+
+        const images = new FormData()
+
+        Array.from(e.dataTransfer.files).forEach((image, idx) => {
+            images.append('images', image, image.name)
+
+            const reader = new FileReader()
+            reader.readAsDataURL(image)
+            reader.onload = () => {
+                const $imgContainer = document.createElement('div')
+                $imgContainer.classList.add('card')
+                $imgContainer.style.width = '10rem'
+                $imgContainer.innerHTML = `
+                        <img src="${reader.result}">
+                        <div class="jobStatus card-body" id="${idx}" style="cursor: pointer;"></div>`
+                $imagesContainer.appendChild($imgContainer)   
+            }
+        })
+
+        fetch('/files', {
+            method: 'POST',
+            body: images
+        }).then(r => r.json()).then(data => {
+            document.querySelectorAll('.jobStatus').forEach($cardBody => {
+                $cardBody.innerHTML = `<p>Working on job ${data.id}... click periodically to view status</p>`
+
+                $cardBody.onclick = e => {
+                    fetch(`/api/job/${data.id}`)
+                    .then(r => r.json()).then(({completed, results}) => {
+                        if (completed) $cardBody.innerHTML = `<p>Result: ${results[$cardBody.id].data.text}</p>`
+                    })
+                }
+            })
+        })
+    }
+</script>
