@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="https://unpkg.com/papercss@1.7.0/dist/paper.min.css">
+<style>
+    .grid { 
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-gap: 10px;
+        align-items: stretch;
+    }
+</style>
+
+<video id="$video" width="360" height="360"></video>
+<canvas id="$canvas" width="360" height="360"></canvas>
+<button id="$takePicture">Take Picture</button>
+<div id="$imagesContainer" class="grid"></div>
+
+<script>
+    const renderSelfies = () => {
+        $imagesContainer.innerHTML = ''
+        fetch('/api/images').then(r => r.json()).then(data => {
+            data.forEach(image => {
+                const $imgDiv = document.createElement('div')
+                $imgDiv.innerHTML = `
+                    <a href="/images/${image}"><img style="width: 200px; height: 200px" src="/images/${image}"></a>`
+                $imagesContainer.append($imgDiv)
+            })
+        })
+    }
+
+    navigator.mediaDevices.getUserMedia({audio: false, video: true})
+    .then(stream => {
+        $video.srcObject = stream 
+        $video.play()
+    })
+
+    $takePicture.onclick = e => {
+        const $context = $canvas.getContext('2d')
+        $context.drawImage($video, 0, 0, 360, 360)
+        const base64Data = $canvas.toDataURL().replace(/^data:image\/png;base64,/, '')
+        
+        fetch('/api/images', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ img: base64Data })
+        }).then(r => r.json()).then(renderSelfies)
+    }
+
+    renderSelfies()
+</script>
