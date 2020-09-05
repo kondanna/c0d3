@@ -2,6 +2,8 @@ const express = require('express')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const { Client } = require('pg')
+require('dotenv').config()
 
 const app = express()
 app.use(express.json())
@@ -9,6 +11,14 @@ app.use(express.static('public'))
 
 let users = {} // {<username>: {<username>, <password>, <email>, <fullname>}, ...}
 const jwtPassword = 'the securest(sp?) password in the world'
+
+const client = new Client({
+    host: process.env.MY_OVH_IP,
+    port: 5432,
+    user: process.env.MY_OVH_USERNAME,
+    password: process.env.MY_POSTGRESQL_PASSWORD,
+    database: 'users'
+})
 
 app.get('/api/sessions', (req, res) => { 
     const token = (req.get('Authorization') || '').replace('Bearer ', '')
@@ -57,4 +67,4 @@ app.post('/api/sessions', (req, res) => {
     })
 })
 
-app.listen(3000, console.log('auth server listening on port 3000'))
+app.listen(3057, console.log('auth server listening on port 3057'))
