@@ -1,0 +1,131 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+<style>
+</style>
+
+<div id="$appContainer"></div>
+
+<script>
+	const renderMain = () => {
+		const userInfo = JSON.parse(sessionStorage.getItem('usersession')) || {}
+		if (!userInfo.username || !userInfo.jwt) return renderLogin()
+		
+		$appContainer.innerHTML = `
+			<div class="$memesContainer"></div>
+			<video id="$video" width="360" height="360"></video>
+			<canvas id="$canvas" width="360" height="360"></canvas>
+			<input id="$textInput" type="text">
+			<button id="$sendMeme">Send</button>`
+			
+		navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+		.then(stream => {
+			$video.srcObject = stream 
+			$video.play()
+		})
+
+		$sendMeme.onclick = e => {
+			const $context = $canvas.getContext('2d')
+			$context.drawImage($video, 0, 0, 360, 360)
+			const base64Data = $canvas.toDataUrl().replace(/^data:image\/png;base64,/, '')
+
+			fetch('/api/messages', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ 
+					user: userInfo.username, 
+					img: base64Data, 
+					text: $textInput.value 
+				})
+			}).then(r => r.json()).then(renderMain)
+		}
+		
+		const fetchChatMessages = () => {
+			fetch('/api/messages', {
+				headers: {
+					Authorization: `Bearer ${userInfo.jwt}` 
+				}
+			}).then(r => r.json()).then(data => {
+				$memesContainer.innerHTML = data.reduce((acc, meme) => `
+				${acc}<div style="width: 200px; height: 200px;">
+					<img src="/public/images/${meme.filename}"> 
+				</div>`)
+			})
+
+			setTimeout(fetchChatMessages, 500)
+		}
+		
+		fetchChatMessages()
+	}
+
+	const renderLogin = () => {
+		$appContainer.innerHTML = `
+            <h1>You must be logged in</h1>
+            <p> No Account? You can
+                <a href="#" id="$instead">Sign up instead</a>
+            </p>
+            <input id="$username" type="text" placeholder="username">
+            <input id="$password" type="password" placeholder="password">
+            <button id="$login">Login</button>`
+
+        $instead.onclick = e => renderSignUp()
+
+        $login.onclick = e => {
+            fetch('http://localhost:3000/api/sessions', {
+                method: 'POST', 
+                credentials: 'include', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: $username.value,
+                    password: btoa($password.value)
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.error) return console.log('Error:', data.error)
+                if (data.username) {
+                    sessionStorage.setItem('usersession', JSON.stringify(data))
+                    renderMain()
+                }
+            })
+        }
+	}
+
+	const renderSignUp = () => {
+		$appContainer.innerHTML = `
+            <h1>New Account!</h1>
+            <p> Already have an account? You can
+            <a href="#" id="$instead">Login instead</a>
+            </p>
+            <input id="$name" type="text" placeholder="full name">
+            <input id="$username" type="text" placeholder="username">
+            <input id="$email" type="email" placeholder="email">
+            <input id="$password" type="password" placeholder="password">
+            <button id="$signUp">Sign Up</button>`
+
+        $instead.onclick = e => renderLogin()
+        
+        $signUp.onclick = e => {
+            fetch('http://localhost:3000/api/users', {
+                method: 'POST', 
+                credentials: 'include', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: $username.value, 
+                    email: $email.value,
+                    name: $name.value,
+                    password: btoa($password.value)
+                }),
+            }).then(r => r.json()).then(data => {
+                if (data.error) return console.log('Error:', data.error)
+                console.log('Success:', data)
+                sessionStorage.setItem('usersession', JSON.stringify(data))
+                renderMain()
+            })
+        }
+	}
+
+	renderMain()
+</script>
