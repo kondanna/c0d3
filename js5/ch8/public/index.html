@@ -40,7 +40,8 @@
         fetch('/api/images', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`
             },
             body: JSON.stringify({ img: base64Data })
         }).then(r => r.json()).then(renderSelfies)

@@ -10,6 +10,10 @@ app.use(express.json())
 app.use(express.static('public'))
 
 let users = {} // {<username>: {<username>, <password>, <email>, <fullname>}, ...}
+fs.readFile('./users.json', (_err, data) => {
+    users = JSON.parse(data)
+})
+
 const jwtPassword = 'the securest(sp?) password in the world'
 
 const client = new Client({
@@ -20,6 +24,17 @@ const client = new Client({
     database: 'users'
 })
 
+app.use('/api/*', (req, res, next) => {   
+    res.header('Access-Control-Allow-Credentials', true)
+    res.header('Access-Control-Allow-Origin', req.headers.origin)
+    res.header('Allow-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Credentials' 
+    )
+    next()
+})
+
 app.get('/api/sessions', (req, res) => { 
     const token = (req.get('Authorization') || '').replace('Bearer ', '')
     jwt.verify(token, jwtPassword, (err, decoded) => {
@@ -27,7 +42,7 @@ app.get('/api/sessions', (req, res) => {
         if (err || !decoded || !decoded.username) {
             return res.status(403).json({error: {message: 'unverified'}})
         }
-        return res.status(200).json(decoded.username)
+        return res.status(200).json({username: decoded.username, token})
     })
 })
 
@@ -56,7 +71,6 @@ app.post('/api/users', (req, res) => {
 
 app.post('/api/sessions', (req, res) => { 
     const { username, password } = req.body || {}
-    fs.readFile('./users.json', (_err, data) => users = JSON.parse(data))
 
     const currentUser = users[username]
     if (!currentUser) return res.status(403).json({error: {message: 'username does not exist'}})
@@ -67,4 +81,4 @@ app.post('/api/sessions', (req, res) => {
     })
 })
 
-app.listen(3057, console.log('auth server listening on port 3057'))
+app.listen(3000, console.log('auth server listening on port 3000'))

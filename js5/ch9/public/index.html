@@ -1,65 +1,95 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 <style>
+    .grid { 
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-gap: 10px;
+        align-items: stretch;
+    }
 </style>
 
-<div id="$appContainer"></div>
+<div id="$app"></div>
 
 <script>
-	const renderMain = () => {
+	const startApp = () => {
 		const userInfo = JSON.parse(sessionStorage.getItem('usersession')) || {}
 		if (!userInfo.username || !userInfo.jwt) return renderLogin()
 		
-		$appContainer.innerHTML = `
-			<div class="$memesContainer"></div>
+		$app.innerHTML = `
+            <div id="$messagesContainer1" class="grid"></div>
+            <div id="$messagesContainer2"></div>
 			<video id="$video" width="360" height="360"></video>
 			<canvas id="$canvas" width="360" height="360"></canvas>
 			<input id="$textInput" type="text">
-			<button id="$sendMeme">Send</button>`
-			
+			<button id="$sendMessage">Send Message</button>`
+        
+        let $currentContainer = $messagesContainer2    
+        let $otherContainer = $messagesContainer1
+
 		navigator.mediaDevices.getUserMedia({ audio: false, video: true })
 		.then(stream => {
 			$video.srcObject = stream 
 			$video.play()
 		})
 
-		$sendMeme.onclick = e => {
+		$sendMessage.onclick = e => {
 			const $context = $canvas.getContext('2d')
-			$context.drawImage($video, 0, 0, 360, 360)
-			const base64Data = $canvas.toDataUrl().replace(/^data:image\/png;base64,/, '')
+			$context.drawImage($video, 0, 0)
+			const base64Data = $canvas.toDataURL().replace(/^data:image\/png;base64,/, '')
 
 			fetch('/api/messages', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userInfo.jwt}` 
 				},
 				body: JSON.stringify({ 
-					user: userInfo.username, 
+					username: userInfo.username, 
 					img: base64Data, 
-					text: $textInput.value 
+					msg: $textInput.value 
 				})
-			}).then(r => r.json()).then(renderMain)
-		}
+			}).then(r => r.json()).then(() => {
+                $textInput.value = ''
+                fetchMessages()
+            })
+        }
+        
 		
-		const fetchChatMessages = () => {
+		const renderMessages = () => {
 			fetch('/api/messages', {
 				headers: {
 					Authorization: `Bearer ${userInfo.jwt}` 
 				}
-			}).then(r => r.json()).then(data => {
-				$memesContainer.innerHTML = data.reduce((acc, meme) => `
-				${acc}<div style="width: 200px; height: 200px;">
-					<img src="/public/images/${meme.filename}"> 
-				</div>`)
-			})
-
-			setTimeout(fetchChatMessages, 500)
+			}).then(r => r.json()).then(imageFileNames => {
+                return new Promise(resolve => {
+                    $otherContainer.innerHTML = imageFileNames.reduce((acc, image) => {
+                        return `${acc}<div><img src="/images/${image}?date=${Date.now()}" alt="" width="200" height="200"></div>`
+                    }, '')
+                    let count = 0
+                    const images = Array.from($otherContainer.querySelectorAll('img'))
+                    images.forEach(image => {
+                        image.onload = () => {
+                            count++
+                            if (count === imageFileNames.length) resolve()
+                        }
+                    })            
+                }).then(() => {
+                    console.log('messages rendered')
+                    const $tempContainer = $otherContainer
+                    $otherContainer = $currentContainer 
+                    $currentContainer = $tempContainer
+                    $currentContainer.style.display = 'block'
+                    $otherContainer.style.display = 'none'
+                    renderMessages()
+                })      
+            })
+        }
+            
+        renderMessages()	
 		}
-		
-		fetchChatMessages()
-	}
 
 	const renderLogin = () => {
-		$appContainer.innerHTML = `
+		$app.innerHTML = `
             <h1>You must be logged in</h1>
             <p> No Account? You can
                 <a href="#" id="$instead">Sign up instead</a>
@@ -85,14 +115,14 @@
                 if (data.error) return console.log('Error:', data.error)
                 if (data.username) {
                     sessionStorage.setItem('usersession', JSON.stringify(data))
-                    renderMain()
+                    startApp()
                 }
             })
         }
 	}
 
 	const renderSignUp = () => {
-		$appContainer.innerHTML = `
+		$app.innerHTML = `
             <h1>New Account!</h1>
             <p> Already have an account? You can
             <a href="#" id="$instead">Login instead</a>
@@ -122,10 +152,10 @@
                 if (data.error) return console.log('Error:', data.error)
                 console.log('Success:', data)
                 sessionStorage.setItem('usersession', JSON.stringify(data))
-                renderMain()
+                startApp()
             })
         }
 	}
 
-	renderMain()
+	startApp()
 </script>
