@@ -12,6 +12,17 @@ const solution = (arr, num, i=0, map={}) => {
   return solution(arr, num, i+1, map)
 }
 
+/*
+const solution = (arr, target, diffs={}) => {
+  return arr.some(num => {
+    if (diffs[target - num]) return true
+    diffs[num] = true
+    return false
+  })
+}
+*/
+
+
 module.exports = {
   solution
 }
