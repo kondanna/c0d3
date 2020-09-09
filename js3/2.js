@@ -12,15 +12,15 @@
  * @return {array} arr
  */
 
-const createOneDArray = (nElements, y, arr=[]) => {
+const make1DArray = (nElements, y, arr=[]) => {
   if (nElements === 0) return arr 
   arr.push({y, x: arr.length})
-  return createOneDArray(nElements-1, y, arr)
+  return make1DArray(nElements-1, y, arr)
 }
 
 const solution = (numNestedArrays, numObjectsInArray, result=[]) => {
   if (numNestedArrays === 0) return result 
-  result.push(createOneDArray(numObjectsInArray, result.length))
+  result.push(make1DArray(numObjectsInArray, result.length))
   return solution(numNestedArrays-1, numObjectsInArray, result)
 }
 
