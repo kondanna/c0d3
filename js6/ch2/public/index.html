@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+
+<div class="app"> </div>
+
+<script>
+    const debounce = (fn, time) => {
+        let timeout;
+        return () => {
+            clearTimeout(timeout)
+            timeout = setTimeout(fn, time)
+        }
+    }
+
+    const sendQuery = query => {
+        return fetch('/graphql', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                operationName: null,
+                variables: {},
+                query
+            }),
+        }).then(r => r.json()).then(r => r.data)
+    }
+
+    const renderLogin = () => {
+        document.querySelector('.app').innerHTML = `
+            <h1>Pokemon Search</h1>
+            <input id="$searchBox" type="text" style="width: 100%;">
+            <div id="$suggestions"></div>
+            <hr>
+            <div id="$selection"></div>`
+
+        const loadSelection = name => {
+            $selection.innerHTML = ''
+            sendQuery(`{getPokemon(str:"${name}"){name, image}}`).then(result => {
+                console.log(result)
+                $selection.innerHTML = `
+                    <h1>${result.getPokemon.name}</h1>
+                    <img src=${result.getPokemon.image} />`
+            })
+        }
+
+        const runSearch = debounce(() => {
+            $selection.innerHTML = ''
+            sendQuery(`{search(str:"${$searchBox.value}") {name}}`).then(data => {
+                const results = data.search || []
+                $suggestions.innerHTML = ''
+                results.forEach(e => {
+                    const newStr = e.name.replace($searchBox.value, `<span>${$searchBox.value}</span>`)
+                    const $element = document.createElement('h3')
+                    $element.innerHTML = newStr
+                    $element.style.cursor = 'pointer'
+                    $suggestions.append($element)
+                    $element.onclick = () => {
+                        $suggestions.innerHTML = ''
+                        loadSelection(e.name)
+                    }
+                })
+            })
+        }, 300)
+
+        $searchBox.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                $suggestions.innerHTML = ''
+                return loadSelection($searchBox.value)
+            }
+            runSearch()
+        })
+        
+    }
+
+    renderLogin()
+</script>
