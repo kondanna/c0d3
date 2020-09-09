@@ -29,7 +29,7 @@
         return checkLights(row, idx+1)
     }
 
-    const toggleLight = (blockObj) => {
+    const toggleLight = blockObj => {
         blockObj.lightOn = !blockObj.lightOn
         blockObj.blockEl.className = blockObj.lightOn ? 'block light' : 'block'
     }
