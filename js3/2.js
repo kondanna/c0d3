@@ -12,16 +12,15 @@
  * @return {array} arr
  */
 
-const createOneDimensionArray = (nElements, y, arr=[]) => {
+const createOneDArray = (nElements, y, arr=[]) => {
   if (nElements === 0) return arr 
   arr.push({y, x: arr.length})
-  return createOneDimensionArray(nElements-1, y, arr)
+  return createOneDArray(nElements-1, y, arr)
 }
 
 const solution = (numNestedArrays, numObjectsInArray, result=[]) => {
   if (numNestedArrays === 0) return result 
-  const row = createOneDimensionArray(numObjectsInArray, result.length)
-  result.push(row)
+  result.push(createOneDArray(numObjectsInArray, result.length))
   return solution(numNestedArrays-1, numObjectsInArray, result)
 }
 
