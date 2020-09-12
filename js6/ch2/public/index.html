@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
 
-<div class="app"> </div>
+<div id="$app"> </div>
 
 <script>
     const debounce = (fn, time) => {
@@ -27,7 +27,7 @@
     }
 
     const renderLogin = () => {
-        document.querySelector('.app').innerHTML = `
+        $app.innerHTML = `
             <h1>Pokemon Search</h1>
             <input id="$searchBox" type="text" style="width: 100%;">
             <div id="$suggestions"></div>
@@ -40,7 +40,14 @@
                 console.log(result)
                 $selection.innerHTML = `
                     <h1>${result.getPokemon.name}</h1>
-                    <img src=${result.getPokemon.image} />`
+                    <img src=${result.getPokemon.image} />
+                    <button id="$continue">Login</button>`
+
+                $continue.onclick = () => {
+                    sendQuery(`{login (pokemon: "${name}") {name}}`).then(result => {
+                        window.location.reload()
+                    })
+                }
             })
         }
 
@@ -63,15 +70,83 @@
             })
         }, 300)
 
-        $searchBox.addEventListener('keyup', (e) => {
+        $searchBox.onkeyup = e => {
             if (e.key === 'Enter') {
                 $suggestions.innerHTML = ''
                 return loadSelection($searchBox.value)
             }
             runSearch()
-        })
-        
+        }
     }
 
-    renderLogin()
+    const renderLessons = (userInfo, lessons = []) => {
+        const NotEnrolled = ($container, title) => {
+            const $element = document.createElement('h4')
+            $element.innerHTML = title
+            $element.style.cursor = 'pointer'
+            $container.append($element)
+            $element.onclick = () => {
+                sendQuery(`mutation {enroll(title: "${title}") {name}}`).then(data => {
+                    window.location.reload()
+                })
+            }
+        }
+
+        const Enrolled = ($container, title) => {
+            const $element = document.createElement('h4')
+            $element.innerHTML = title
+            $container.append($element)
+            $element.onclick = () => {
+                sendQuery(`mutation {unenroll(title: "${title}") {name}}`).then(data => {
+                    window.location.reload()
+                })
+            }
+        }
+
+        const lessonMap = lessons.reduce((acc, lesson) => {
+            acc[lesson.title] = { enrolled: false }
+            return acc
+        }, {})
+        console.log(lessonMap)
+        const userLessons = userInfo.lessons || []
+        userLessons.forEach(lesson => {
+            lessonMap[lesson.title].enrolled = true
+        })
+
+        const enrolledLessons = Object.keys(lessonMap).filter(title => lessonMap[title].enrolled)
+        const notEnrolledLessons = Object.keys(lessonMap).filter(title => !lessonMap[title].enrolled)
+        $app.innerHTML = `
+            <h1>${userInfo.name}</h1>
+            <img src=${userInfo.image} />
+
+            <hr>
+            <div id="$enrolledSection"></div>
+            <hr />
+            <div id="$notEnrolledSection"></div>
+            `
+        if (notEnrolledLessons.length) {
+            $notEnrolledSection.innerHTML = `
+                <h2>Not Enrolled</h2>
+                <p>Click to enroll</p>
+                `
+            $notEnrolledLessons.forEach(title => {
+                NotEnrolled($notEnrolledSection, title)
+            })
+        }
+        if (enrolledLessons.length) {
+            $enrolledSection.innerHTML = `
+                <h2>Enrolled</h2>
+                <p>Click to unenroll</p>
+                `
+            $enrolledLessons.forEach(title => {
+                Enrolled($enrolledSection, title)
+            })
+        }
+    }
+
+    sendQuery(`{user {name, image, lessons {title}}, lessons {title}}`).then(({ user, lessons }) => {
+        if (!user) return renderLogin()
+        renderLessons(user, lessons) // user = array of enrolled lessons, lessons = array of all lessons
+    })
+
 </script>
