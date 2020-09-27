@@ -1,11 +1,39 @@
-<html>
-	<head>
-		<style> 
-		</style>
-	</head>
-	<div id="$root"></div>
-	<script type="text/babel" src="stars.js"></script>
-	<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
-	<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
-	<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-</html>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+<div id="$app"></div>
+
+<script type="text/babel">
+
+    const App = () => {
+        const [selection, setSelection] = React.useState(0)
+        const [tense, setTense] = React.useState('are selecting')
+
+        const stars = [1,2,3,4,5].map(starIdx => {
+            return (
+                <i
+                    key={starIdx}
+                    style={{ color: 'yellow', fontSize: '30px', cursor: 'pointer' }}
+                    className={selection >= starIdx ? 'fa-star fas' : 'fa-star far'}
+                    onMouseEnter={() => {
+                        setTense('are selecting')
+                        setSelection(starIdx) 
+                    }}
+                    onClick={() => setTense('have selected')}>
+                </i>
+            )
+        })
+
+        return (
+            <div>
+                {stars}
+                <div>You {tense} {selection} stars!</div>
+            </div>
+        )
+    }
+
+    ReactDOM.render(<App />, $app)
+
+</script>
+<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
