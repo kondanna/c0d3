@@ -4,24 +4,29 @@
 
 <script type="text/babel">
 
-    const Star = ({isSelected, selectStar}) => {
-        
-        return <i
-            className="fa-star"
-            style={{ color: 'yellow', fontSize: "30px", cursor: "pointer" }}
-            onMouseEnter={console.log}>
-        </i>
-    }
-
     const App = () => {
+        const [selection, setSelection] = React.useState(0)
+        const [tense, setTense] = React.useState('are selecting')
+
+        const stars = [1,2,3,4,5].map(starIdx => {
+            return (
+                <i
+                    key={starIdx}
+                    style={{ color: 'yellow', fontSize: '30px', cursor: 'pointer' }}
+                    className={selection >= starIdx ? 'fa-star fas' : 'fa-star far'}
+                    onMouseEnter={() => {
+                        setTense('are selecting')
+                        setSelection(starIdx) 
+                    }}
+                    onClick={() => setTense('have selected')}>
+                </i>
+            )
+        })
+
         return (
             <div>
-                <Star idx={0} />
-                <Star idx={1} />
-                <Star idx={2} />
-                <Star idx={3} />
-                <Star idx={4} />
-                <div>You are selecting {numSelected} stars!</div>
+                {stars}
+                <div>You {tense} {selection} stars!</div>
             </div>
         )
     }
