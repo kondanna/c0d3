@@ -25,7 +25,7 @@
         )
     }
 
-    const TodoList = ({ name, style, data, prev, next, kanban, setKanban }) => {
+    const TodoList = ({name, style, data, prev, next, kanban, setKanban}) => {
         const [todoValue, setTodoValue] = React.useState('')
 
         React.useEffect(() => {
@@ -42,11 +42,11 @@
             }))
         }
 
-        const todoItems = kanban.map(({ id, text, todoList }, i) => {
+        const todoItems = kanban.map(({id, text, todoList}) => {
             const arrowStyle = { display: 'inline-block', cursor: 'pointer', alignSelf: 'center', margin: '10px' }
             if (todoList === name) {
                 return (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'stretch', margin: '5px', width: '100%' }}>
+                    <div key={id} style={{ display: 'flex', justifyContent: 'stretch', margin: '5px', width: '100%' }}>
                         {prev && <div onClick={() => moveTodo(id, text, prev)} style={arrowStyle}>{'<'}</div>}
 
                         <div onClick={() => deleteTodo(id)} style={{ width: '100%', textAlign: 'justify', margin: '10px 0' }}>{text}</div>
@@ -73,22 +73,17 @@
         )
     }
 
-    const Kanban = () => {
-        const [kanban, setKanban] = React.useState([])
+    const Kanban = ({savedKanban}) => {
+        const [kanban, setKanban] = React.useState(savedKanban)
 
-        React.useEffect(() => {
-            setKanban(JSON.parse(localStorage.getItem('kanban') || '[]'))
-        }, [])
-
-        const kanbanStructure = [
+        const boards = [
             { name: 'todo', style: { backgroundColor: '#35235D' }, prev: '', next: 'doing' },
             { name: 'doing', style: { backgroundColor: '#CB2402' }, prev: 'todo', next: 'done' },
             { name: 'done', style: { backgroundColor: '#4C49A2' }, prev: 'doing', next: 'approved' },
             { name: 'approved', style: { backgroundColor: '#A31A48' }, prev: 'done', next: '' }
         ]
 
-        const todoLists = kanbanStructure.map(({ name, style, prev, next }, i) => {
-            const todos = kanban.filter(todo => todo.name === name)
+        const todoLists = boards.map(({ name, style, prev, next }, i) => {
             return <TodoList key={i} name={name} style={style} kanban={kanban} setKanban={setKanban} prev={prev} next={next} />
         })
 
@@ -103,7 +98,8 @@
         const app = window.location.pathname.split('/').pop()
         console.log(app)
         if (app.toLowerCase() === 'stars') return <Stars />
-        return <Kanban />
+        const savedKanban = JSON.parse(localStorage.getItem('kanban') || '[]')
+        return <Kanban savedKanban={savedKanban} />
     }
 
     ReactDOM.render(<App />, $root)
