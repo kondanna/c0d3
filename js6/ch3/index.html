@@ -25,26 +25,11 @@
         )
     }
 
-    const TodoList = ({name, style, data, prev, next, kanban, setKanban}) => {
+    const TodoList = ({name, style, data, prev, next, todos, createTodo, deleteTodo, moveTodo}) => {
         const [todoValue, setTodoValue] = React.useState('')
 
-        React.useEffect(() => {
-            localStorage.setItem('kanban', JSON.stringify(kanban))
-        }, [kanban])
-
-        const createTodo = text => setKanban([...kanban, { id: Date.now(), todoList: name, text }])
-
-        const deleteTodo = id => setKanban(kanban.filter(todo => todo.id !== id))
-
-        const moveTodo = (id, text, todoList) => {
-            setKanban(kanban.map(todo => {
-                if (todo.id === id) return { id, text, todoList }
-            }))
-        }
-
-        const todoItems = kanban.map(({id, text, todoList}) => {
+        const todoItems = todos.map(({id, text, todoList}) => {
             const arrowStyle = { display: 'inline-block', cursor: 'pointer', alignSelf: 'center', margin: '10px' }
-            if (todoList === name) {
                 return (
                     <div key={id} style={{ display: 'flex', justifyContent: 'stretch', margin: '5px', width: '100%' }}>
                         {prev && <div onClick={() => moveTodo(id, text, prev)} style={arrowStyle}>{'<'}</div>}
@@ -54,7 +39,6 @@
                         {next && <div onClick={() => moveTodo(id, text, next)} style={arrowStyle}>{'>'}</div>}
                     </div>
                 )
-            }
         })
 
         return (
@@ -67,7 +51,7 @@
 
                 <div style={{ display: 'flex', width: '100%' }}>
                     <textarea value={todoValue} onChange={e => setTodoValue(e.target.value)} style={{ width: '100%' }}></textarea>
-                    <button onClick={() => { createTodo(todoValue); setTodoValue('') }}>Submit</button>
+                    <button onClick={() => { createTodo(todoValue, name); setTodoValue('') }}>Submit</button>
                 </div>
             </div>
         )
@@ -75,6 +59,21 @@
 
     const Kanban = ({savedKanban}) => {
         const [kanban, setKanban] = React.useState(savedKanban)
+
+        React.useEffect(() => {
+            localStorage.setItem('kanban', JSON.stringify(kanban))
+        }, [kanban])
+
+        const createTodo = (text, todoList) => setKanban([...kanban, { id: Date.now(), todoList, text }])
+
+        const deleteTodo = id => setKanban(kanban.filter(todo => todo.id !== id))
+
+        const moveTodo = (id, text, todoList) => {
+            setKanban(kanban.map(todo => {
+                if (todo.id === id) return { id, text, todoList }
+                return todo
+            }))
+        }
 
         const boards = [
             { name: 'todo', style: { backgroundColor: '#35235D' }, prev: '', next: 'doing' },
@@ -84,7 +83,8 @@
         ]
 
         const todoLists = boards.map(({ name, style, prev, next }, i) => {
-            return <TodoList key={i} name={name} style={style} kanban={kanban} setKanban={setKanban} prev={prev} next={next} />
+            const todos = kanban.filter(todo => todo.todoList === name)
+            return <TodoList key={i} name={name} style={style} todos={todos} createTodo={createTodo} deleteTodo={deleteTodo} moveTodo={moveTodo} prev={prev} next={next} />
         })
 
         return (
@@ -92,7 +92,7 @@
                 {todoLists}
             </div>
         )
-    }
+    }   
 
     const App = () => {
         const app = window.location.pathname.split('/').pop()
