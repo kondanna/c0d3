@@ -1,104 +1,174 @@
+<style>
+    .star {
+        color: yellow;
+        font-size: 30px;
+        cursor: pointer;
+    }
+
+    .kanban {
+        display: flex;
+        margin: 30px;
+    }
+
+    .todoList {
+        display: flex;
+        flex-direction: column;
+        margin: 30px;
+        height: 100%;
+    }
+
+    .todoList .inputContainer {
+        display: flex;
+        width: 100%;
+    }
+
+    .todoList .titleBar {
+        color: white;
+        width: 100%;
+        text-align: center;
+    }
+
+    .todoContainer {
+        display: flex;
+        justify-content: stretch;
+        margin: 5px;
+        width: 100%;
+    }
+
+    .todoContainer .todoText {
+        width: 100%;
+        text-align: justify;
+        margin: 10px 0;
+    }
+
+    .todoContainer .arrow {
+        display: inline-block;
+        cursor: pointer;
+        align-self: center;
+        margin: 10px;
+    }
+</style>
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
 
 <div id="$root"></div>
 
 <script type="text/babel">
+    const Star = ({ idx, isSelected, handleClick, handleSelect }) => {
+        return (
+            <i key={idx} className={'star'}
+                className={isSelected ? 'fa-star fas' : 'fa-star far'}
+                onClick={() => handleClick(idx)}
+                onMouseEnter={() => handleSelect(idx)}>
+            </i>
+        )
+    }
 
-    const Stars = () => {
+    const Stars = props => {
         const [selection, setSelection] = React.useState(0)
         const [tense, setTense] = React.useState('are selecting')
-        const stars = [1, 2, 3, 4, 5].map(starIdx => {
-            return <i key={starIdx} style={{ color: 'yellow', fontSize: '30px', cursor: 'pointer' }}
-                className={selection >= starIdx ? 'fa-star fas' : 'fa-star far'}
-                onClick={() => setTense('have selected')}
-                onMouseEnter={() => {
-                    setTense('are selecting')
-                    setSelection(starIdx)
-                }}>
-            </i>
-        })
+
         return (
             <div>
-                {stars}
+                {[1, 2, 3, 4, 5].map(idx => <Star key={idx} idx={idx} handleClick={handleClick} handleSelect={handleSelect} />)}
                 <div>You {tense} {selection} stars!</div>
             </div>
         )
     }
 
-    const TodoList = ({name, style, data, prev, next, todos, createTodo, deleteTodo, moveTodo}) => {
+    const kanbanStructure = [
+        { name: 'todo', style: { backgroundColor: '#35235D' }, prev: '', next: 'doing' },
+        { name: 'doing', style: { backgroundColor: '#CB2402' }, prev: 'todo', next: 'done' },
+        { name: 'done', style: { backgroundColor: '#4C49A2' }, prev: 'doing', next: 'approved' },
+        { name: 'approved', style: { backgroundColor: '#A31A48' }, prev: 'done', next: '' }
+    ]
+
+    const TodoItem = ({ idx, listName, text, prev, next, deleteTodo, moveTodo }) => {
+        return (
+            <div className={'todoContainer'}>
+                {prev && <div className={'arrow'} onClick={() => moveTodo(idx, text, listName, prev)}>{'<'}</div>}
+                <div className={'todoText'} onClick={() => deleteTodo(idx, listName)}>{text}</div>
+                {next && <div className={'arrow'} onClick={() => moveTodo(idx, text, listName, next)}>{'>'}</div>}
+            </div>
+        )
+    }
+
+    const TodoList = ({ name, style, prev, next, todos, createTodo, deleteTodo, moveTodo }) => {
         const [todoValue, setTodoValue] = React.useState('')
 
-        const todoItems = todos.map(({id, text, todoList}) => {
-            const arrowStyle = { display: 'inline-block', cursor: 'pointer', alignSelf: 'center', margin: '10px' }
-                return (
-                    <div key={id} style={{ display: 'flex', justifyContent: 'stretch', margin: '5px', width: '100%' }}>
-                        {prev && <div onClick={() => moveTodo(id, text, prev)} style={arrowStyle}>{'<'}</div>}
-
-                        <div onClick={() => deleteTodo(id)} style={{ width: '100%', textAlign: 'justify', margin: '10px 0' }}>{text}</div>
-
-                        {next && <div onClick={() => moveTodo(id, text, next)} style={arrowStyle}>{'>'}</div>}
-                    </div>
-                )
-        })
+        const handleSubmit = (text, list) => {
+            createTodo(text, list)
+            setTodoValue('')
+        }
 
         return (
-            <div id={name} style={{ display: 'flex', flexDirection: 'column', margin: '30px', height: '100%' }}>
-                <div style={{ ...style, color: 'white', width: '100%', textAlign: 'center' }}>
-                    <div className={'title'}>{name}</div>
+            <div id={name} className={'todoList'}>
+                <div className={'titleBar'} style={style}>
+                    <div>{name}</div>
                 </div>
 
-                <div>{todoItems}</div>
+                <div>{todos.map((todo, i) => {
+                    return <TodoItem
+                        key={i}
+                        idx={i}
+                        listName={name}
+                        text={todo}
+                        prev={prev}
+                        next={next}
+                        deleteTodo={deleteTodo}
+                        moveTodo={moveTodo} />})}
+                </div>
 
-                <div style={{ display: 'flex', width: '100%' }}>
+                <div className={'inputContainer'}>
                     <textarea value={todoValue} onChange={e => setTodoValue(e.target.value)} style={{ width: '100%' }}></textarea>
-                    <button onClick={() => { createTodo(todoValue, name); setTodoValue('') }}>Submit</button>
+                    <button onClick={() => handleSubmit(todoValue, name)}>Submit</button>
                 </div>
             </div>
         )
     }
 
-    const Kanban = ({savedKanban}) => {
-        const [kanban, setKanban] = React.useState(savedKanban)
+    const Kanban = props => {
+        const [kanban, setKanban] = React.useState(props.savedKanban)
 
         React.useEffect(() => {
             localStorage.setItem('kanban', JSON.stringify(kanban))
         }, [kanban])
 
-        const createTodo = (text, todoList) => setKanban([...kanban, { id: Date.now(), todoList, text }])
-
-        const deleteTodo = id => setKanban(kanban.filter(todo => todo.id !== id))
-
-        const moveTodo = (id, text, todoList) => {
-            setKanban(kanban.map(todo => {
-                if (todo.id === id) return { id, text, todoList }
-                return todo
-            }))
+        const createTodo = (text, toList) => {
+            setKanban({ ...kanban, [toList]: [...kanban[toList], text] })
         }
 
-        const boards = [
-            { name: 'todo', style: { backgroundColor: '#35235D' }, prev: '', next: 'doing' },
-            { name: 'doing', style: { backgroundColor: '#CB2402' }, prev: 'todo', next: 'done' },
-            { name: 'done', style: { backgroundColor: '#4C49A2' }, prev: 'doing', next: 'approved' },
-            { name: 'approved', style: { backgroundColor: '#A31A48' }, prev: 'done', next: '' }
-        ]
+        const deleteTodo = (idx, fromList) => {
+            setKanban({ ...kanban, [fromList]: kanban[fromList].filter((todo, i) => i !== idx) })
+        }
 
-        const todoLists = boards.map(({ name, style, prev, next }, i) => {
-            const todos = kanban.filter(todo => todo.todoList === name)
-            return <TodoList key={i} name={name} style={style} todos={todos} createTodo={createTodo} deleteTodo={deleteTodo} moveTodo={moveTodo} prev={prev} next={next} />
-        })
+        const moveTodo = (idx, text, fromList, toList) => {
+            setKanban({ ...kanban, [fromList]: kanban[fromList].filter((todo, i) => i !== idx), [toList]: [...kanban[toList], text], })
+        }
 
         return (
-            <div style={{ display: 'flex', margin: '30px' }}>
-                {todoLists}
+            <div className={'kanban'}>
+                {kanbanStructure.map(todoList => {
+                    const { name, style, prev, next } = todoList
+                    return <TodoList
+                        key={name}
+                        name={name}
+                        style={style}
+                        prev={prev}
+                        next={next}
+                        todos={kanban[name]}
+                        createTodo={createTodo}
+                        deleteTodo={deleteTodo}
+                        moveTodo={moveTodo} />
+                })}
             </div>
         )
-    }   
+    }
 
     const App = () => {
         const app = window.location.pathname.split('/').pop()
-        console.log(app)
-        if (app.toLowerCase() === 'stars') return <Stars />
-        const savedKanban = JSON.parse(localStorage.getItem('kanban') || '[]')
+        if (app.toLowerCase() === 'stars') return <Stars stars={stars} />
+
+        const savedKanban = JSON.parse(localStorage.getItem('kanban') || '{"todo":[],"doing":[],"done":[],"approved":[]}')
         return <Kanban savedKanban={savedKanban} />
     }
 
