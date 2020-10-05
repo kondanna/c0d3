@@ -152,8 +152,7 @@
     }
     const App = () => {
         const app = window.location.pathname.split('/').pop()
-        //if (app.toLowerCase() === 'stars') 
-        return <Stars/>
+        if (app.toLowerCase() === 'stars') return <Stars/>
         const savedKanban = JSON.parse(localStorage.getItem('kanban') || '{"todo":[],"doing":[],"done":[],"approved":[]}')
         return <Kanban savedKanban={savedKanban} />
     }
