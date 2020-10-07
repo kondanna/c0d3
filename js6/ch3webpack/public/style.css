@@ -1,0 +1,41 @@
+.star {
+    color: yellow;
+    font-size: 30px;
+    cursor: pointer;
+}
+.kanban {
+    display: flex;
+    margin: 30px;
+}
+.todoList {
+    display: flex;
+    flex-direction: column;
+    margin: 30px;
+    height: 100%;
+}
+.todoList .inputContainer {
+    display: flex;
+    width: 100%;
+}
+.todoList .titleBar {
+    color: white;
+    width: 100%;
+    text-align: center;
+}
+.todoContainer {
+    display: flex;
+    justify-content: stretch;
+    margin: 5px;
+    width: 100%;
+}
+.todoContainer .todoText {
+    width: 100%;
+    text-align: justify;
+    margin: 10px 0;
+}
+.todoContainer .arrow {
+    display: inline-block;
+    cursor: pointer;
+    align-self: center;
+    margin: 10px;
+}
