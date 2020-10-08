@@ -20,3 +20,6 @@ module.exports = {
     ],
   },
 }
+
+// npm i --save-dev @babel/preset-react
+// npm i --save react react-dom
