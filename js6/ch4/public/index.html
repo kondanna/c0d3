@@ -44,7 +44,7 @@
                     <button id="$continue">Login</button>`
 
                 $continue.onclick = () => {
-                    sendQuery(`{login (pokemon: "${name}") {name}}`).then(result => {
+                    sendQuery(`{login (str:"${name}") {name}}`).then(result => {
                         window.location.reload()
                     })
                 }
@@ -119,6 +119,7 @@
         $app.innerHTML = `
             <h1>${userInfo.name}</h1>
             <img src=${userInfo.image} />
+            <button id="$logout">Logout</button>
 
             <hr>
             <div id="$enrolledSection"></div>
@@ -142,6 +143,10 @@
             enrolledLessons.forEach(title => {
                 Enrolled($enrolledSection, title)
             })
+        }
+        $logout.onclick = () => {
+            sendQuery(`{login (str:"") {name}}`)
+            window.location.reload()
         }
     }
 
