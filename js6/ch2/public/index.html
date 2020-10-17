@@ -44,7 +44,7 @@
                     <button id="$continue">Login</button>`
 
                 $continue.onclick = () => {
-                    sendQuery(`{login (pokemon: "${name}") {name}}`).then(result => {
+                    sendQuery(`{login (str: "${name}") {name}}`).then(result => {
                         window.location.reload()
                     })
                 }
