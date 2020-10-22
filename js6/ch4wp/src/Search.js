@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 
 const debounce = (fn, time) => {
     let timeout;
@@ -27,16 +27,19 @@ const Search = () => {
     const [suggestions, setSuggestions] = useState([])
     const [selectedPokemon, setSelectedPokemon] = useState({})
 
+    const debouncedQuery = useCallback(debounce(() => {
+        console.log('sent query')
+        sendQuery(`{search(str:"${searchText}") {name}}`).then(data => {
+            const results = data.search || []
+            setSuggestions(results)
+        })
+    }, 500), [])
+
     const handleKeyUp = e => {
+        console.log('keyup')
         if (e.key === 'Enter') return loadSelection(searchText)
 
-        debounce(() => {
-            console.log('keyup')
-            sendQuery(`{search(str:"${searchText}") {name}}`).then(data => {
-                const results = data.search || []
-                setSuggestions(results)
-            })
-        }, 300)()
+        debouncedQuery()
     }
 
     const loadSelection = name => {

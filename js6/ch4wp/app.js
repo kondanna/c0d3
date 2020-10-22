@@ -131,7 +131,7 @@ server.applyMiddleware({ app, path: '/graphql' })
 app.listen(process.env.PORT || 8123, () => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=151').then(r => r.json()).then(({ results }) => allPokemon = results)
     fetch('https://www.c0d3.com/api/lessons').then(r => r.json()).then(data => allLessons = data)
-    console.log('listening on port 3000')
+    console.log('listening on port 8123')
 })
 
 // in graphql playground, make sure "request.credentials": "include"
