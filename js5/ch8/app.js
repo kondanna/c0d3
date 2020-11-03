@@ -20,7 +20,7 @@ app.post('/api/images', (req, res) => {
     const url = `/public/images/${imgID}.png`
     images[imgID] = { img, url }
     fs.writeFile(`.${url}`, img, 'base64', () => {
-        res.status(201).json({ img, url })
+        res.status(201).json({ imgUrl: `${imgID}.png` })
     })
 })
 
