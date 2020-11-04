@@ -78,8 +78,9 @@
         day: date.getDate(),
         weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
         hours: date.getHours() % 12,
-        minutes: date.getMinutes().length < 2 ? `0${date.getMinutes()}` : `${date.getMinutes()}`
+        minutes: date.getMinutes() < 10 ? `0${date.getMinutes()}` : `${date.getMinutes()}`
     }
+    console.log(fullDate)
     document.querySelector('.time').innerText = `${fullDate.hours}:${fullDate.minutes}`
     document.querySelector('.weekday').innerText = `${fullDate.weekday}`
     document.querySelector('.date').innerText = `${fullDate.day} ${fullDate.month} ${fullDate.year}`
