@@ -17,7 +17,7 @@ app.use(session({
 // cache
 let allLessons = []
 let allPokemon = []
-const pokeUsers = {} // {name: {<name>, <imgUrl>, <lessonsArray>}, ...}
+const pokeUsers = {} // {name: {<name>, <imgUrl>, <lessonsArray>}, <ratingsArray> ...}
 
 const server = new ApolloServer({
     playground: true,
@@ -26,10 +26,16 @@ const server = new ApolloServer({
             name: String,
             image: String,
             lessons: [Lesson],
+            ratings: [Rating]
         }
 
         type Lesson {
             title: String,
+        }
+
+        type Rating {
+            title: Lesson,
+            rating: Int
         }
 
         type Pokemon {
@@ -53,7 +59,8 @@ const server = new ApolloServer({
 
         type Mutation {
             enroll(title: String): [Lesson],
-            unenroll(title: String): [Lesson]
+            unenroll(title: String): [Lesson],
+            rate(title: String, rating: Int): [Rating]
         }
 
     `),
@@ -64,10 +71,17 @@ const server = new ApolloServer({
                 const name = req.session.user
                 const image = pokeUsers[name]['image']
                 const currentlyEnrolled = pokeUsers[name]['lessons'] || []
+
+                const defaultRatings = allLessons.map(lesson => {
+                    return { lesson, rating: 0 }
+                })
+                const userRatings = pokeUsers[name]['ratings'] || defaultRatings
+
                 return {
                     name,
                     image,
                     lessons: currentlyEnrolled,
+                    ratings: userRatings
                 }
             },
 
@@ -117,9 +131,17 @@ const server = new ApolloServer({
                 pokeUser.lessons = pokeUser.lessons || []
                 pokeUser.lessons = pokeUser.lessons.filter(lesson => lesson.title !== title)
                 return pokeUser.lessons
+            },
+
+            rate: (_, { title, rating }, { req: { session: { user } } }) => {
+                const pokeUser = pokeUsers[user] || {}
+                if (!pokeUser) return
+
+                
+
             }
         }
-    },  
+    },
 
     context: ({ req, res }) => {
         return { req, res }
