@@ -60,7 +60,7 @@ const server = new ApolloServer({
         type Mutation {
             enroll(title: String): [Lesson],
             unenroll(title: String): [Lesson],
-            rate(title: String, rating: Int): [Rating]
+            rateLesson(title: String, rating: Int): [Rating]
         }
 
     `),
@@ -133,7 +133,7 @@ const server = new ApolloServer({
                 return pokeUser.lessons
             },
 
-            rate: (_, { title, rating }, { req: { session: { user } } }) => {
+            rateLesson: (_, { title, rating }, { req: { session: { user } } }) => {
                 const pokeUser = pokeUsers[user] || {}
                 if (!pokeUser) return
 
