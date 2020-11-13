@@ -137,8 +137,12 @@ const server = new ApolloServer({
                 const pokeUser = pokeUsers[user] || {}
                 if (!pokeUser) return
 
-                
+                const userRatings = pokeUsers[name]['ratings']
+                userRatings.forEach(lesson => {
+                    if (lesson.title === title) lesson.rating = rating 
+                })
 
+                return userRatings
             }
         }
     },

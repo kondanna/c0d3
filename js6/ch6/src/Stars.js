@@ -8,6 +8,9 @@ const Stars = () => {
     const handleClick = () => {
         setLocked(true)
         setTense('have selected')
+        sendQuery(`{rateLesson(str:"${__title}", int:${selected}) {title, rating}}`).then(data => {
+
+        })
     }
     const handleSelect = idx => {
         if (locked) return
