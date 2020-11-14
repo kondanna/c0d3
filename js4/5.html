@@ -66,9 +66,9 @@
         const todoEl = document.createElement('div')
         todoEl.className = `${type} todoItem`
         todoEl.id = id
-        const arrow = (id, direction, destination) => {
-            return `<div class="arrow" id="${id}"  destination="${destination}">${direction}</div>`
-        }
+
+        const arrow = (id, direction, destination) => `<div class="arrow" id="${id}" destination="${destination}">${direction}</div>`
+
         if (type == 'todo') todoEl.innerHTML = `<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'doing')}`
         if (type == 'doing') todoEl.innerHTML = `${arrow(id, '<', 'todo')}<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'done')}`
         if (type == 'done') todoEl.innerHTML = `${arrow(id, '<', 'doing')}<div class="item" id=${id}>${text}</div>${arrow(id, '>', 'approved')}`
@@ -78,19 +78,21 @@
     container.onclick = (e) => {
         const todoType = e.target.id // todo, doing, done, approved
         const input = document.querySelector(`#${todoType}-input`)
+        const todoCopy = JSON.parse(JSON.stringify(todoState))
+        let prevCommand = ''
         if (e.target.className === 'submit' && input.value !== '') { // push new todo object and add to DOM
-            prevStates.push({ ...todoState })
+            prevStates.push(todoCopy)
             todoState[`${todoType}${Date.now().toString().slice(-6)}`] = { type: todoType, text: input.value }
             render(todoState)
         }
         if (e.target.className === 'arrow') {
-            prevStates.push({ ...todoState })
+            prevStates.push(todoCopy)
             todoState[e.target.id].type = e.target.getAttribute('destination')
             render(todoState)
         }
         if (e.target.className === 'item') {
-            prevStates.push({ ...todoState })
-            todoState[e.target.id] = null
+            prevStates.push(todoCopy)
+            todoState[e.target.id] = undefined
             render(todoState)
         }
         if (e.target.id === 'undo' && prevStates.length !== 0) {
@@ -99,6 +101,7 @@
         }
     }
     const render = (state) => {
+        console.log(prevStates)
         localStorage.setItem('kanban', JSON.stringify(todoState))
         container.innerHTML = ''
         const todoTypes = [{ type: 'todo', color: '#35235D' }, { type: 'doing', color: '#CB2402' }, { type: 'done', color: '#4C49A2' }, { type: 'approved', color: '#A31A48' }]
