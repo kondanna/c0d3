@@ -1,16 +1,14 @@
 import React from 'react'
 
-const Stars = () => {
-    const [selected, setSelected] = React.useState(0)
+const Stars = props => {
+    const [selected, setSelected] = React.useState(props.rating)
     const [locked, setLocked] = React.useState(false)
     const [tense, setTense] = React.useState('are selecting')
 
     const handleClick = () => {
         setLocked(true)
         setTense('have selected')
-        sendQuery(`{rateLesson(str:"${__title}", int:${selected}) {title, rating}}`).then(data => {
-
-        })
+        props.handleRateLesson(props.title, selected)
     }
     const handleSelect = idx => {
         if (locked) return

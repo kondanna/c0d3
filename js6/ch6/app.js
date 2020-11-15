@@ -89,10 +89,6 @@ const server = new ApolloServer({
 
             search: (_, { str }) => allPokemon.filter(pokemon => pokemon.name.includes(str)),
 
-            /* search: (_, {str}) => fetch(`https://pokeapi.co/api/v2/pokemon?limit=151`).then(r => r.json()).then(data => {
-                return data.results.filter(pokemon => pokemon.name.includes(str))
-            }), */
-
             getPokemon: (_, { str }) => {
                 return pokeUsers[str]
                     ? pokeUsers[str]
@@ -103,7 +99,8 @@ const server = new ApolloServer({
                         })
             },
 
-            login: (_, { str }, { req }) => { // sets session
+            // set session
+            login: (_, { str }, { req }) => { 
                 const user = pokeUsers[str] || {}
                 req.session.user = user.name
                 return user
