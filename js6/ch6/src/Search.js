@@ -28,15 +28,15 @@ const Search = () => {
     const [selectedPokemon, setSelectedPokemon] = useState({})
 
     const debouncedQuery = useCallback(debounce(() => {
-        console.log('sent query')
+        console.log('sending query: ', searchText)
         sendQuery(`{search(str:"${searchText}") {name}}`).then(data => {
             const results = data.search || []
             setSuggestions(results)
         })
-    }, 500), [])
+    }, 500), [searchText])
 
     const handleKeyUp = e => {
-        console.log('keyup')
+        console.log('keyup:', searchText )
         if (e.key === 'Enter') return loadSelection(searchText)
 
         debouncedQuery()

@@ -17,7 +17,7 @@ app.use(session({
 // cache
 let allLessons = []
 let allPokemon = []
-const pokeUsers = {} // {name: {<name>, <imgUrl>, <lessonsArray>}, <ratingsArray> ...}
+const pokeUsers = {} // {name: {<name>, <imgUrl>, <lessonsArray>, <ratingsArray>}, ...}
 
 const server = new ApolloServer({
     playground: true,
@@ -34,7 +34,7 @@ const server = new ApolloServer({
         }
 
         type Rating {
-            title: Lesson,
+            title: String,
             rating: Int
         }
 
@@ -73,15 +73,16 @@ const server = new ApolloServer({
                 const currentlyEnrolled = pokeUsers[name]['lessons'] || []
 
                 const defaultRatings = allLessons.map(lesson => {
-                    return { lesson, rating: 0 }
+                    return { title: lesson.title, rating: 0 }
                 })
-                const userRatings = pokeUsers[name]['ratings'] || defaultRatings
+
+                pokeUsers[name]['ratings'] = pokeUsers[name]['ratings'] || defaultRatings
 
                 return {
                     name,
                     image,
                     lessons: currentlyEnrolled,
-                    ratings: userRatings
+                    ratings: pokeUsers[name]['ratings']
                 }
             },
 
@@ -134,7 +135,7 @@ const server = new ApolloServer({
                 const pokeUser = pokeUsers[user] || {}
                 if (!pokeUser) return
 
-                const userRatings = pokeUsers[name]['ratings']
+                const userRatings = pokeUser.ratings
                 userRatings.forEach(lesson => {
                     if (lesson.title === title) lesson.rating = rating 
                 })

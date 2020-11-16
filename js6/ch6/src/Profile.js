@@ -23,6 +23,7 @@ const Profile = ({ user }) => {
                 acc[title] = rating
                 return acc
             }, {})
+            console.log(ratingMap)
             setRatings(ratingMap)
         })
     }, [])
@@ -62,7 +63,7 @@ const Profile = ({ user }) => {
                 {Object.keys(enrollment).filter(title => enrollment[title].enrolled).map((title, i) =>
                 <div>
                     <h4 key={i} id={title} onClick={() => handleUnenroll(title)}>{title}</h4>
-                    <Stars title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
+                    <Stars key={i} title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
                 </div>)}
             </div>
             <hr />
@@ -72,7 +73,7 @@ const Profile = ({ user }) => {
                 {Object.keys(enrollment).filter(title => !enrollment[title].enrolled).map((title, i) =>
                 <div>
                     <h4 key={i} id={title} onClick={() => handleEnroll(title)}>{title}</h4>
-                    <Stars title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
+                    <Stars key={i} title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
                 </div>)}
             </div>
         </div>
