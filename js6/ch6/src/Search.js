@@ -23,6 +23,7 @@ const Search = () => {
 
     useEffect(() => {
         console.log('sending query: ', searchText)
+        if (searchText === '') return
         sendQuery(`{search(str:"${searchText}") {name}}`).then(data => {
             const results = data.search || []
             setSuggestions(results)
