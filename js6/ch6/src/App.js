@@ -11,7 +11,7 @@ const App = () => {
     const [currentUser, setCurrentUser] = useState({})
 
     useEffect(() => {
-        sendQuery(`{user {name, image, lessons {title}, ratings {title, rating}}}`).then(({ user }) => {
+        sendQuery(`{user {name, image, lessons {title, rating}}}`).then(({ user }) => {
             if (!user) return
             setCurrentUser(user)
         })

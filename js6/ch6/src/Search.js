@@ -1,12 +1,5 @@
-import React, { useState, useCallback } from 'react'
-
-const debounce = (fn, time) => {
-    let timeout;
-    return () => {
-        clearTimeout(timeout)
-        timeout = setTimeout(fn, time)
-    }
-}
+import React, { useState, useEffect } from 'react'
+import useDebounce from './useDebounce'
 
 const sendQuery = query => {
     return fetch('/graphql', {
@@ -24,22 +17,23 @@ const sendQuery = query => {
 
 const Search = () => {
     const [searchText, setSearchText] = useState('')
+    const debouncedSearch = useDebounce(searchText, 500)
     const [suggestions, setSuggestions] = useState([])
     const [selectedPokemon, setSelectedPokemon] = useState({})
 
-    const debouncedQuery = useCallback(debounce(() => {
+    useEffect(() => {
         console.log('sending query: ', searchText)
         sendQuery(`{search(str:"${searchText}") {name}}`).then(data => {
             const results = data.search || []
             setSuggestions(results)
         })
-    }, 500), [searchText])
+    }, [debouncedSearch])
 
     const handleKeyUp = e => {
-        console.log('keyup:', searchText )
+        console.log('keyup:', searchText)
         if (e.key === 'Enter') return loadSelection(searchText)
 
-        debouncedQuery()
+        setSearchText(e.target.value)
     }
 
     const loadSelection = name => {

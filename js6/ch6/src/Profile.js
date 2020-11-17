@@ -4,7 +4,6 @@ import Stars from './Stars'
 
 const Profile = ({ user }) => {
     const [enrollment, setEnrollment] = useState({})
-    const [ratings, setRatings] = useState({})
 
     useEffect(() => {
         sendQuery(`{lessons {title}}`).then(({ lessons }) => {
@@ -15,33 +14,28 @@ const Profile = ({ user }) => {
             const userLessons = user.lessons || []
             userLessons.forEach(lesson => {
                 lessonMap[lesson.title].enrolled = true
+                lessonMap[lesson.title].rating = lesson.rating
             })
             setEnrollment(lessonMap)
-
-            const userRatings = user.ratings || []
-            const ratingMap = userRatings.reduce((acc, {title, rating}) => {
-                acc[title] = rating
-                return acc
-            }, {})
-            console.log(ratingMap)
-            setRatings(ratingMap)
         })
     }, [])
 
     const handleEnroll = title => {
-        sendQuery(`mutation {enroll(title: "${title}") {title}}`).then(_ => {
-            setEnrollment({ ...enrollment, [title]: { enrolled: true } })
+        sendQuery(`mutation {enroll(title: "${title}") {title, rating}}`).then(_ => {
+            setEnrollment({ ...enrollment, [title]: { enrolled: true, rating: 0 } })
         })
     }
 
     const handleUnenroll = title => {
-        sendQuery(`mutation {unenroll(title: "${title}") {title}}`).then(_ => {
-            setEnrollment({ ...enrollment, [title]: { enrolled: false } })
+        sendQuery(`mutation {unenroll(title: "${title}") {title, rating}}`).then(_ => {
+            setEnrollment({ ...enrollment, [title]: { enrolled: false, rating: 0 } })
         })
     }
 
     const handleRateLesson = (title, rating) => {
-        sendQuery(`mutation {rateLesson(title:"${title}", rating:${rating}) {title, rating}}`).then(console.log)
+        sendQuery(`mutation {rateLesson(title:"${title}", rating:${rating}) {title, rating}}`).then(_ => {
+            setEnrollment({ ...enrollment, [title]: { enrolled: true, rating } })
+        })
     }
 
     const handleLogout = () => {
@@ -61,20 +55,19 @@ const Profile = ({ user }) => {
                 <h2>Enrolled</h2>
                 <p>Click to unenroll</p>
                 {Object.keys(enrollment).filter(title => enrollment[title].enrolled).map((title, i) =>
-                <div>
-                    <h4 key={i} id={title} onClick={() => handleUnenroll(title)}>{title}</h4>
-                    <Stars key={i} title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
-                </div>)}
+                    <div key={i}>
+                        <h4 id={title} onClick={() => handleUnenroll(title)}>{title}</h4>
+                        <Stars title={title} rating={enrollment[title].rating} handleRateLesson={handleRateLesson} />
+                    </div>)}
             </div>
             <hr />
             <div>
                 <h2>Not Enrolled</h2>
                 <p>Click to enroll</p>
                 {Object.keys(enrollment).filter(title => !enrollment[title].enrolled).map((title, i) =>
-                <div>
-                    <h4 key={i} id={title} onClick={() => handleEnroll(title)}>{title}</h4>
-                    <Stars key={i} title={title} rating={ratings[title]} handleRateLesson={handleRateLesson}/>
-                </div>)}
+                    <div key={i}>
+                        <h4 id={title} onClick={() => handleEnroll(title)}>{title}</h4>
+                    </div>)}
             </div>
         </div>
     )

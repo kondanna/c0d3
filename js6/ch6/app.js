@@ -26,14 +26,9 @@ const server = new ApolloServer({
             name: String,
             image: String,
             lessons: [Lesson],
-            ratings: [Rating]
         }
 
         type Lesson {
-            title: String,
-        }
-
-        type Rating {
             title: String,
             rating: Int
         }
@@ -60,7 +55,7 @@ const server = new ApolloServer({
         type Mutation {
             enroll(title: String): [Lesson],
             unenroll(title: String): [Lesson],
-            rateLesson(title: String, rating: Int): [Rating]
+            rateLesson(title: String, rating: Int): [Lesson]
         }
 
     `),
@@ -70,20 +65,9 @@ const server = new ApolloServer({
             user: (_, __, { req }) => {
                 const name = req.session.user
                 const image = pokeUsers[name]['image']
-                const currentlyEnrolled = pokeUsers[name]['lessons'] || []
+                const lessons = pokeUsers[name]['lessons'] || []
 
-                const defaultRatings = allLessons.map(lesson => {
-                    return { title: lesson.title, rating: 0 }
-                })
-
-                pokeUsers[name]['ratings'] = pokeUsers[name]['ratings'] || defaultRatings
-
-                return {
-                    name,
-                    image,
-                    lessons: currentlyEnrolled,
-                    ratings: pokeUsers[name]['ratings']
-                }
+                return { name, image, lessons }
             },
 
             lessons: () => allLessons,
@@ -100,10 +84,9 @@ const server = new ApolloServer({
                         })
             },
 
-            // set session
-            login: (_, { str }, { req }) => { 
+            login: (_, { str }, { req }) => {
                 const user = pokeUsers[str] || {}
-                req.session.user = user.name
+                req.session.user = user.name // set session
                 return user
             },
 
@@ -118,7 +101,7 @@ const server = new ApolloServer({
 
                 pokeUser.lessons = pokeUser.lessons || []
                 if (Object.values(pokeUser.lessons).find(lesson => lesson.title === title)) return pokeUser.lessons
-                pokeUser.lessons.push({ title })
+                pokeUser.lessons.push({ title, rating: 0 })
                 return pokeUser.lessons
             },
 
@@ -135,12 +118,11 @@ const server = new ApolloServer({
                 const pokeUser = pokeUsers[user] || {}
                 if (!pokeUser) return
 
-                const userRatings = pokeUser.ratings
-                userRatings.forEach(lesson => {
-                    if (lesson.title === title) lesson.rating = rating 
+                pokeUser.lessons = pokeUser.lessons || []
+                pokeUser.lessons.forEach(lesson => {
+                    if (lesson.title === title) lesson.rating = rating
                 })
-
-                return userRatings
+                return pokeUser.lessons
             }
         }
     },

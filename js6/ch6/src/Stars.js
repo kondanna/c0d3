@@ -12,11 +12,14 @@ const Star = ({ idx, isSelected, handleClick, handleSelect }) => {
 
 const Stars = props => {
     const { title, rating, handleRateLesson } = props
-    console.log(title, rating)
 
     const [selected, setSelected] = useState(rating)
     const [locked, setLocked] = useState(false)
     const [tense, setTense] = useState('have selected')
+
+    useEffect(() => {
+        console.log(title, rating, selected)
+    }, [])
 
     const handleClick = () => {
         setLocked(true)
