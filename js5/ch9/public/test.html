@@ -1,0 +1,171 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <style>
+    .userMessage {
+      display: flex;
+    }
+    #canvasImg {
+      height: 120px;
+      width: 170px;
+    }
+    /* .list img, .dummyList img {
+      height: 300px;
+    } */
+  </style>
+  <div class='main-container'></div>
+  <script>
+    fetch('https://js5.c0d3.com/auth/api/sessions', {
+      credentials: 'include'
+    }).then(r =>  r.json() ).then(data => {
+      if(!data || !data.jwt) {
+        login()
+      } else {
+        webcamePage()
+      }
+    })
+    
+    const mainContainer = document.querySelector('.main-container')
+    const login = () => {
+      mainContainer.innerHTML = `
+        <h1 class="login-header">You must be logged in</h1>
+        <input class='username' type="text" placeholder="username">
+        <input class='password' type="password" placeholder="password">
+        <button class='login-submit'>Submit</button>
+      `
+      const username = document.querySelector('.username')
+      const password = document.querySelector('.password')
+      const loginBtn = document.querySelector('.login-submit')
+    
+      loginBtn.addEventListener('click', () => {
+        fetch('https://js5.c0d3.com/auth/api/sessions', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: username.value,
+            password: btoa(password.value)
+          })
+        })
+        .then( (res) => {
+          return res.json()
+        }).then( (body) => {
+          // console.log(body);
+          if (body.jwt && body.username) {
+            globalUsername = body.username
+            jwtToken = body.jwt
+            localStorage.setItem('userjwt', body.jwt)
+            webcamePage()
+          }
+        })
+      })
+    }
+    const webcamePage = () => {
+      mainContainer.innerHTML = `
+        <div class='videoContainer'>
+          <video class='video' width="300" height="300"></video>  
+        </div>
+        <div>
+          <input class='inputMessage' placeholder='Type Message Here' type="text">
+          <button class='btn'>Banana</button>  
+        </div>
+        <hr>
+        <div class='userMessage'>
+          <div class='list'></div>
+          <div style='display: none;' class='dummyList'></div>
+          <canvas style='display: none;' id='canvasImg' width="640" height="480"></canvas>
+        </div> 
+      `
+      refreshImg()
+      const videoContainer = document.querySelector('.videoContainer')
+      const btn = document.querySelector('.btn')
+      const video = document.querySelector('.video')
+      const inputMessage = document.querySelector('.inputMessage')
+      const canvas = document.getElementById('canvasImg')
+      const context = canvas.getContext('2d')
+      let list = document.querySelector('.list')
+      let dummyList = document.querySelector('.dummyList')
+      const constraints = {
+        audio: true,
+        video: true
+      }
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(function(stream) {
+          /* use the stream */
+          video.srcObject = stream
+          video.play()
+        })
+      const snapPic = () => {
+        context.drawImage(video, 0, 0);
+        return canvas.toDataURL().replace('data:image/png;base64,', '')
+      }
+      
+      btn.addEventListener('click', () => {
+        console.log('worked?');
+        fetch('/api/image', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({
+            // test: 'testing'
+            imageData: snapPic(),
+            inputData: inputMessage.value
+          })
+        })
+      })
+      function refreshImg() {
+        fetch('/api/message', {
+          headers: {
+            'content-type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          }
+        }).then((res) => {
+          return res.json()
+        }).then((data) => {
+          console.log(data);
+          dummyList.innerHTML = data.reduce((acc, e) => {
+            return acc + `
+              <img src='${e}?${Date.now()}'>
+            `
+          }, '') 
+       
+          let loaded = 0
+          const images = dummyList.querySelectorAll('img')
+          // console.log(images);
+          if (!images.length) {
+            return setTimeout( refreshImg, 1500)
+          }
+          images.forEach( img => {
+            // console.log(img);
+            img.addEventListener('load', () => {
+              // console.log('eqwgqq');
+              loaded += 1
+              if( loaded !== images.length ) return 
+               // we know all the images has loaded
+               dummyList.style.display = 'block' // show list
+               list.style.display = "none" // This list now points to the other div, which we want to hide.
+               // swap
+              const tmp = list
+              list = dummyList
+              dummyList = tmp
+              console.log('Captain Song');
+              setTimeout( refreshImg, 1500 )
+            })
+          })
+        })
+      }
+    }
+  
+    let jwtToken = localStorage.getItem('userjwt')
+  
+  </script>
+</body>
+</html>
