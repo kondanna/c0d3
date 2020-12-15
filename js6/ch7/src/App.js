@@ -6,13 +6,15 @@ import { Search } from './Search'
 const GET_USER = gql`{user {name, image, lessons {title, rating}}}`
 
 const App = () => {
-    const { error, data } = useQuery(GET_USER)
+    const { error, loading, data } = useQuery(GET_USER)
 
     if (error) return console.log(error.message)
 
+    if (loading) return <div><h3>Loading... </h3></div>
+    
     return (
         <div>
-            {Object.keys(data).length === 0
+            {Object.keys(data.user).length === 0
                 ? <Search />
                 : <Profile user={data} />}
         </div>

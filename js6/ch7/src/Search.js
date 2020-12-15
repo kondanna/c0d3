@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { useQuery, gql } from '@apollo/client'
+import { useQuery, useLazyQuery, gql } from '@apollo/client'
 import useDebounce from './useDebounce'
 
-const SEARCH_POKEMON = gql`{search(str: $pokemonName) {name}}`
+const SEARCH = gql`query search($pokemonName: String) {search(str: $pokemonName) {name}}`
+const SELECT_POKEMON = gql`query getPokemon($str: String) {getPokemon(str:$name){name, image}}`
 
 const Search = () => {
     const [searchText, setSearchText] = useState('')
@@ -10,30 +11,31 @@ const Search = () => {
     const [suggestions, setSuggestions] = useState([])
     const [selectedPokemon, setSelectedPokemon] = useState({})
 
+    const [search, searchResults] = useLazyQuery(SEARCH)
+    const [selectPokemon, { data }] = useLazyQuery(SELECT_POKEMON)
+
     useEffect(() => {
         if (searchText === '') return
-        const { error, data } = useQuery(SEARCH_POKEMON, {
-            variables: { pokemonName }, 
+        search({
+            variables: {
+               pokemonName: searchText 
+            }
         })
+        setSuggestions(searchResults.data)
 
-        setSuggestions(data)
-        
     }, [debouncedSearch])
 
     const handleKeyUp = e => {
         console.log('keyup:', searchText)
         if (e.key === 'Enter') return loadSelection(searchText)
-
         setSearchText(e.target.value)
     }
 
     const loadSelection = name => {
         setSearchText('')
-        sendQuery(`{getPokemon(str:"${name}"){name, image}}`).then(result => {
-            console.log(result.getPokemon)
-            setSelectedPokemon(result.getPokemon)
-            setSuggestions([])
-        })
+        selectPokemon({ variables: { str: name } })
+        setSelectedPokemon(data)
+        setSuggestions([])
     }
 
     const handleLogin = name => {
