@@ -47,7 +47,7 @@ const server = new ApolloServer({
             user: User,
             lessons: [Lesson],
             search(str: String): [Pokemon],
-            getPokemon(str: String): PokemonDetails,
+            selectPokemon(str: String): PokemonDetails,
             login(str: String): PokemonDetails,
             getAllPokemon: [Pokemon],
         }
@@ -74,7 +74,7 @@ const server = new ApolloServer({
 
             search: (_, { str }) => allPokemon.filter(pokemon => pokemon.name.includes(str)),
 
-            getPokemon: (_, { str }) => {
+            selectPokemon: (_, { str }) => {
                 return pokeUsers[str]
                     ? pokeUsers[str]
                     : fetch(`https://pokeapi.co/api/v2/pokemon/${str}`)

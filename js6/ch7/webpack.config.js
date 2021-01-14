@@ -2,7 +2,8 @@ const path = require('path')
 
 module.exports = {
   entry: './src/index.js', // The first file to look into. Move your JavaScript here!
-  mode: 'production',
+  mode: 'development',
+  // mode: 'production',
   output: {
     path: path.resolve(__dirname, 'public/dist'), // We will put the compiled file into public/dist
     filename: 'bundle.js'
