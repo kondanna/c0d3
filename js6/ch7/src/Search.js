@@ -1,26 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useLazyQuery, gql } from '@apollo/client'
-
-const useDebounce = (value, delay) => {
-    const [debouncedValue, setDebouncedValue] = useState(value)
-
-    useEffect(() => {
-        // Update debounced value after delay
-        const handler = setTimeout(() => {
-            setDebouncedValue(value)
-        }, delay);
-        // Cancel the timeout if value changes (also on delay change or unmount)
-        return () => {
-            clearTimeout(handler)
-        }
-    }, [value, delay]) // Only re-call effect if value or delay changes
-
-    return debouncedValue
-}
+import Profile from './Profile'
+import useDebounce from './useDebounce'
 
 const SEARCH = gql`query search($pokemonName: String) {search(str: $pokemonName) {name}}`
-const SELECT_POKEMON = gql`query SelectPokemon($str: String) {selectPokemon(str:$name) {name, image}}`
-const LOGIN = gql`query Login($str: String) {login(str:$name) {name, image}}`
+const SELECT_POKEMON = gql`query SelectPokemon($str: String) {selectPokemon(str:$str) {name, image}}`
+const LOGIN = gql`query Login($str: String) {login(str:$str) {name, image}}`
 
 const Search = () => {
     const [searchText, setSearchText] = useState('')
@@ -32,34 +17,28 @@ const Search = () => {
 
     useEffect(() => {
         if (searchText === '') return
+        selectPokemon({}) // clears selected pokemon
         search({ variables: { pokemonName: searchText }})
     }, [debouncedSearch])
 
-    const handleKeyUp = e => {
-        console.log('keyup:', searchText)
-        if (e.key === 'Enter') return loadSelection(searchText)
-        setSearchText(e.target.value)
-    }
-
-    const loadSelection = name => {
-        selectPokemon({ variables: { str: name } })
+    const handleLogin = name => {
+        login({ variables: { str: name } })
         window.location.reload()
     }
 
     return (
         <div>
             <h1>Pokemon Search</h1>
-            <input type="text" value={searchText} onChange={e => setSearchText(e.target.value)} onKeyUp={e => handleKeyUp(e)} style={{ width: "100%" }} />
+            <input type="text" value={searchText} onChange={e => setSearchText(e.target.value)} style={{ width: "100%" }} />
             <hr />
-            <div>{searchResults.map((pokemon, i) => <h3 key={i} style={{ cursor: 'pointer' }} onClick={() => loadSelection(pokemon.name)}>{pokemon.name}</h3>)}</div>
 
             {selectedPokemon
                 ? <div>
-                    <h1>{selectedPokemon.name}</h1>
-                    <img src={selectedPokemon.image} />
-                    <button onClick={() => login({ variables: { str: selectedPokemon.name } })}>Login</button>
+                    <h1>{selectedPokemon.selectPokemon.name}</h1>
+                    <img src={selectedPokemon.selectPokemon.image} />
+                    <button onClick={() => handleLogin(selectedPokemon.selectPokemon.name)}>Login</button>
                 </div>
-                : null}
+                : <div>{searchResults && searchResults.search.map((pokemon, i) => <h3 key={i} style={{ cursor: 'pointer' }} onClick={() => selectPokemon({ variables: { str: pokemon.name }})}>{pokemon.name}</h3>)}</div>}
         </div>
     )
 }

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { useQuery, useMutation, gql } from '@apollo/client'
+import { useQuery, useLazyQuery, useMutation, gql } from '@apollo/client'
 import Stars from './Stars'
 
-const GET_LESSONS = gql`query Lessons($title: String) {lessons {title}}`
+const GET_LESSONS = gql`{lessons {title}}`
 const ENROLL_LESSON = gql`mutation Enroll($title: String) {enroll(title: $title) {title, rating}}`
 const UNENROLL_LESSON = gql`mutation Unenroll($title: String) {unenroll(title: $title) {title, rating}}`
 const RATE_LESSON = gql`mutation RateLesson($title: String, $rating: Int) {rateLesson(title: $title, rating: $rating) {title, rating}}`
-const LOGOUT = gql`query Login($str: String) {login (str: $string) {name}}`
+const LOGOUT = gql`query Login($str: String) {login (str: $str) {name}}`
 
 const Profile = ({ user }) => {
     const [enrollment, setEnrollment] = useState({})
-    
+    console.log(enrollment)
     const { data } = useQuery(GET_LESSONS)
     const [enroll] = useMutation(ENROLL_LESSON)
     const [unenroll] = useMutation(UNENROLL_LESSON)
@@ -18,18 +18,30 @@ const Profile = ({ user }) => {
     const [logout] = useLazyQuery(LOGOUT)
 
     useEffect(() => {
-        const lessonMap = data.lessons.reduce((acc, lesson) => {
-            acc[lesson.title] = { enrolled: false }
-            return acc
-        }, {})
+        if (data && data.lessons) {
+            const lessonMap = data.lessons.reduce((acc, lesson) => {
+                acc[lesson.title] = { enrolled: false }
+                return acc
+            }, {})
+    
+            const userLessons = user.lessons || []
+            userLessons.forEach(lesson => {
+                lessonMap[lesson.title].enrolled = true
+                lessonMap[lesson.title].rating = lesson.rating
+            })
+            setEnrollment(lessonMap)
+        }        
+    }, [data])
 
-        const userLessons = user.lessons || []
-        userLessons.forEach(lesson => {
-            lessonMap[lesson.itle].enrolled = true
-            lessonMap[lesson.title].rating = lesson.rating
-        })
-        setEnrollment(lessonMap)
-    }, [])
+    const handleEnroll = title => {
+        enroll({ variables: { title }})
+        setEnrollment({ ...enrollment, [title]: { enrolled: true, rating: 0 } })
+    }
+
+    const handleUnenroll = title => {
+        unenroll({ variables: { title }})
+        setEnrollment({ ...enrollment, [title]: { enrolled: false, rating: 0 } })
+    }
                                         
     const handleRateLesson = (title, rating) => {
         rateLesson({ variables: { title, rating }})
@@ -53,8 +65,8 @@ const Profile = ({ user }) => {
                 <p>Click to unenroll</p>
                 {Object.keys(enrollment).filter(title => enrollment[title].enrolled).map((title, i) =>
                     <div key={i}>
-                        <h4 id={title} onClick={() => unenroll({ variables: { title }})}>{title}</h4>
-                        <Stars title={title} rating={enrollment[title].rating} handleRateLesson={() => handleRateLesson(title, rating)} />
+                        <h4 id={title} onClick={() => handleUnenroll(title)}>{title}</h4>
+                        <Stars title={title} rating={enrollment[title].rating} handleRateLesson={handleRateLesson} />
                     </div>)}
             </div>
             <hr />
@@ -63,7 +75,7 @@ const Profile = ({ user }) => {
                 <p>Click to enroll</p>
                 {Object.keys(enrollment).filter(title => !enrollment[title].enrolled).map((title, i) =>
                     <div key={i}>
-                        <h4 id={title} onClick={() => enroll({ variables: { title }})}>{title}</h4>
+                        <h4 id={title} onClick={() => handleEnroll(title)}>{title}</h4>
                     </div>)}
             </div>
         </div>

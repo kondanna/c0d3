@@ -17,10 +17,6 @@ const Stars = props => {
     const [locked, setLocked] = useState(false)
     const [tense, setTense] = useState('have selected')
 
-    useEffect(() => {
-        console.log(title, rating, selected)
-    }, [])
-
     const handleClick = () => {
         setLocked(true)
         setTense('have selected')
