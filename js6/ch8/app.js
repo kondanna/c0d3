@@ -2,19 +2,52 @@ const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
+let usersOnline = {} // {<room>: [{<socketID>, <nickname>}, ...], ...}
+let messages = {} // {<room>: [{<nickname>: <message>}, ...], ...}
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 })
 
-io.on('connection', (socket) => { 
-    console.log(`a user connected with socket.id ${socket.id}`) 
+io.on('connection', socket => {
+    socket.on('sign in', data => {
+        const { room, nickname } = data
+        socket.room = room
+        socket.nickname = nickname
 
-    socket.on('chat message', (msg) => {
-        console.log(`used with socket ID ${socket.id} says: ${msg}`)
+        usersOnline[room] = usersOnline[room] || []
+        usersOnline[room].push({ nickname, id: socket.id })
+        messages[room] = messages[room] || []
+
+        socket.emit('load users', usersOnline[room])
+        socket.emit('load messages', messages[room])
+
+        socket.broadcast.emit('user connected', { room, nickname, id: socket.id })
+        const welcomeMessage = { room, nickname: room, message: `${nickname} has joined the chat. Welcome, ${nickname}!` }
+        io.emit('receive message', welcomeMessage)
+        messages[room].push(welcomeMessage)
+    })
+
+    socket.on('typing', data => {
+        socket.broadcast.emit('typing', { room: socket.room, nickname: socket.username }) // sends to every other socket
+    })
+
+    socket.on('new message', data => {
+        const { room, nickname, message } = data
+        messages[room] = messages[room] || []
+        messages[room].push({ nickname, message })
+        io.emit('receive message', { room, nickname, message })
     })
 
     socket.on('disconnect', () => {
-        console.log(`user with socket.id ${socket.id} disconnected`)
+        const { id, room, nickname } = socket
+
+        const goodbyeMessage = { room, nickname: room, message: `${nickname} has left the chat. Goodbye!` }
+        socket.broadcast.emit('receive message', goodbyeMessage)
+        messages[room].push(goodbyeMessage)
+
+        usersOnline[room] = usersOnline[room].filter(socketID => socketID !== id)
+        socket.broadcast.emit('user disconnected', id)
     })
 })
 

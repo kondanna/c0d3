@@ -1,44 +1,210 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+<head>
+  <title>Socket.IO chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
-      #usersOnline { width: 160px; top: 0; left: 0; }
-      #messagesContainer { position: fixed; top: 30; left: 160; right: 0; bottom: 0; }
-    </style>
-  </head>
-  <body>
-    <div id="usersOnline">
+    #appContainer {
+      display: flex;
+    }
 
-    </div> 
-    <div id="messagesContainer">
-      <ul id="messages"></ul>
-      <form id="form" action="">
-        <input id="input" autocomplete="off" /><button id="send">Send</button>
-      </form>
-    </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
+    #form {
+      background: rgba(166, 55, 189, 0.15);
+      padding: 0.25rem;
+      display: flex;
+      height: 3rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+      border-radius: 0.5rem;
+      bottom: 0.4rem;
+      margin-top: 0.4%;
+      width: 100%;
+    }
+
+    #input {
+      border: none;
+      padding: 0 1rem;
+      flex-grow: 1;
+      border-radius: 2rem;
+      margin: 0.25rem;
+    }
+
+    #input:focus {
+      outline: none;
+    }
+
+    #form>button {
+      cursor: pointer;
+      flex-grow: 0.1;
+      background: #5b418e;
+      font-size: 16px;
+      border: none;
+      padding: 0 1rem;
+      margin: 0.25rem;
+      border-radius: 3px;
+      outline: none;
+      color: #fff;
+    }
+
+    #form>button:hover {
+      background: #5b418ee0;
+    }
+
+    #messages {
+      width: 100%;
+      height: 94%;
+      background-color: #d5c8e8;
+      border-radius: 0.5rem;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #messages>li {
+      padding: 0.5rem 1rem;
+    }
+
+    #messages>li:nth-child(odd) {
+      background: #efefef;
+    }
+
+    #usersContainer {
+      flex-grow: 0.9;
+      height: 98vh;
+      background-color: #d5c8e8;
+      border-radius: 0.5rem;
+      margin: 0.4rem;
+      text-align: center;
+    }
+
+    #usersContainer div {
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #users {
+      list-style-type: none;
+    }
+
+    #messagesContainer {
+      flex-grow: 4;
+      margin: 0.4rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="appContainer"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const startApp = () => {
+      appContainer.innerHTML = `
+        <div class="container">
+          <h1>Enter Your Nickname</h1>
+          <input id="$nickname" type="text" placeholder="nickname">
+          <input id="$room" type="text" placeholder="room">
+          <button id="$enter">Enter</button>
+        </div>`
+
+      $enter.onclick = e => renderChat($room.value, $nickname.value)
+    }
+
+    const renderChat = (room, nickname) => {
       const socket = io()
-      socket.on('connect', () => { console.log('connected') })
 
-      send.onclick =  e => {
+      socket.room = room
+      socket.nickname = nickname
+
+      appContainer.innerHTML = `
+        <div id="usersContainer">
+          <ul id="users"></ul>
+        </div>
+
+        <div id="messagesContainer">
+          <ul id="messages"></ul>
+          <form id="form" action="">
+            <input id="input" autocomplete="off" /><button id="send">Send</button>
+          </form>
+          <div id="info"></div>
+        </div>`
+
+      socket.on('connect', () => {
+        if (nickname !== null) {
+          socket.emit('sign in', { room, nickname })
+        }
+        messages.innerHTML = ''
+      })
+
+      socket.on('user connected', data => {
+        if (data.room !== room) return
+
+        const $user = document.createElement('li')
+        $user.id = data.id
+        $user.textContent = data.nickname
+        users.appendChild($user)
+      })
+
+      socket.on('load users', usersArr => {
+        const $users = usersArr.reduce((acc, user) => {
+          return `${acc}<li id=${user.id}>${user.nickname}</li>`
+        }, '')
+        users.innerHTML = $users
+        messages.scrollTo(0, document.body.scrollHeight)
+      })
+
+      // load previous messages
+      socket.on('load messages', messagesArr => {
+        const $messages = messagesArr.reduce((acc, message) => {
+          return `${acc}<li>${message.nickname} says: ${message.message}</li>`
+        }, '')
+        messages.innerHTML = $messages
+        messages.scrollTo(0, document.body.scrollHeight)
+      })
+
+      input.onkeypress = e => {
+        socket.emit('typing', { room, nickname })
+      }
+
+      socket.on('typing', data => {
+        if (data.room !== room) return
+
+        info.textContent = `${data.nickname} is typing... `
+        setTimeout(() => {
+          info.textContent = ''
+        }, 5000)
+      })
+
+      form.onsubmit = e => {
         e.preventDefault()
         if (input.value) {
-          socket.emit('chat message', input.value)
+          socket.emit('new message', { room, nickname, message: input.value })
           input.value = ''
         }
       }
-    </script>
-  </body>
+
+      socket.on('receive message', data => {
+        if (data.room !== room) return
+
+        const $msg = document.createElement('li');
+        $msg.textContent = `${data.nickname} says: ${data.message}`
+        messages.appendChild($msg)
+        messages.scrollTo(0, document.body.scrollHeight)
+      })
+
+      socket.on('user disconnected', userID => {
+        document.querySelector(`#${userID}`).remove()
+      })
+    }
+
+    startApp()
+  </script>
+</body>
+
 </html>
