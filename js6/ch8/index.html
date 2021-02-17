@@ -153,7 +153,8 @@
 
       socket.on('load users', usersArr => {
         const $users = usersArr.reduce((acc, user) => {
-          return `${acc}<li id=${user.id}>${user.nickname}</li>`
+          const [id, nickname] = Object.entries(user)[0]
+          return `${acc}<li id=${id}>${nickname}</li>`
         }, '')
         users.innerHTML = $users
         messages.scrollTo(0, document.body.scrollHeight)

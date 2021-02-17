@@ -2,7 +2,7 @@ const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
-let usersOnline = {} // {<room>: [{<socketID>, <nickname>}, ...], ...}
+let usersOnline = {} // {<room>: [{<socketID>: <nickname>}, ...], ...}
 let messages = {} // {<room>: [{<nickname>: <message>}, ...], ...}
 
 app.get('/', (req, res) => {
@@ -16,20 +16,21 @@ io.on('connection', socket => {
         socket.nickname = nickname
 
         usersOnline[room] = usersOnline[room] || []
-        usersOnline[room].push({ nickname, id: socket.id })
+        usersOnline[room].push({ [socket.id]: nickname })
         messages[room] = messages[room] || []
 
         socket.emit('load users', usersOnline[room])
         socket.emit('load messages', messages[room])
 
         socket.broadcast.emit('user connected', { room, nickname, id: socket.id })
-        const welcomeMessage = { room, nickname: room, message: `${nickname} has joined the chat. Welcome, ${nickname}!` }
+        const welcomeMessage = { room, nickname: room, message: `${nickname} has joined the chat.` }
         io.emit('receive message', welcomeMessage)
         messages[room].push(welcomeMessage)
     })
 
     socket.on('typing', data => {
-        socket.broadcast.emit('typing', { room: socket.room, nickname: socket.username }) // sends to every other socket
+        const { room, nickname } = data
+        socket.broadcast.emit('typing', { room, nickname })
     })
 
     socket.on('new message', data => {
@@ -42,11 +43,11 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         const { id, room, nickname } = socket
 
-        const goodbyeMessage = { room, nickname: room, message: `${nickname} has left the chat. Goodbye!` }
+        const goodbyeMessage = { room, nickname: room, message: `${nickname} has left the chat.` }
         socket.broadcast.emit('receive message', goodbyeMessage)
         messages[room].push(goodbyeMessage)
 
-        usersOnline[room] = usersOnline[room].filter(socketID => socketID !== id)
+        usersOnline[room][id] = null
         socket.broadcast.emit('user disconnected', id)
     })
 })
