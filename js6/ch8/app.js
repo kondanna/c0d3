@@ -2,7 +2,7 @@ const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
-let usersOnline = {} // {<room>: [{<socketID>: <nickname>}, ...], ...}
+let usersOnline = {} // {<room>: {{<socketID>: <nickname>}, ...}, ...}
 let messages = {} // {<room>: [{<nickname>: <message>}, ...], ...}
 
 app.get('/', (req, res) => {
@@ -15,8 +15,8 @@ io.on('connection', socket => {
         socket.room = room
         socket.nickname = nickname
 
-        usersOnline[room] = usersOnline[room] || []
-        usersOnline[room].push({ [socket.id]: nickname })
+        usersOnline[room] = usersOnline[room] || {}
+        usersOnline[room][socket.id] = nickname 
         messages[room] = messages[room] || []
 
         socket.emit('load users', usersOnline[room])
@@ -47,7 +47,7 @@ io.on('connection', socket => {
         socket.broadcast.emit('receive message', goodbyeMessage)
         messages[room].push(goodbyeMessage)
 
-        usersOnline[room][id] = null
+        delete usersOnline[room][id] // usersOnline[room][id] = null
         socket.broadcast.emit('user disconnected', id)
     })
 })
